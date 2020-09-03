@@ -1,0 +1,57 @@
+/*
+ * Copyright 2020 Arne Limburg
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package rocks.limburg.microjpa;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+@ApplicationScoped
+public class TestRelationService {
+
+    @Inject
+    private TransactionalTestParentRepository parentRepository;
+    @Inject
+    private TransactionalTestChildRepository childRepository;
+
+    public void persist(TestChild testChild) {
+        childRepository.persist(testChild);
+    }
+
+    public Relation findParentAndChild(long parentId) {
+        TestParent parent = parentRepository.find(parentId);
+        TestChild child = childRepository.findByParentId(parentId);
+        return new Relation(parent, child);
+    }
+
+    public static class Relation {
+
+        private TestParent parent;
+        private TestChild child;
+
+        public Relation(TestParent parent, TestChild child) {
+            this.parent = parent;
+            this.child = child;
+        }
+
+        public TestParent getParent() {
+            return parent;
+        }
+
+        public TestChild getChild() {
+            return child;
+        }
+    }
+}
