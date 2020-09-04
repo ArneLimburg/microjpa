@@ -102,10 +102,16 @@ public class MicroJpaExtension implements Extension {
                 .scope(ApplicationScoped.class)
                 .addType(EntityManager.class)
                 .addQualifiers(persistenceContext)
-                .createWith(c -> CDI.current()
+                .createWith(c -> {
+                    EntityManager entityManager = CDI.current()
                         .select(EntityManagerFactory.class, new PersistenceUnit.Literal(persistenceContext.unitName()))
                         .get()
-                        .createEntityManager())
+                        .createEntityManager();
+                    if (TransactionalInterceptor.isTransactionActive()) {
+                        entityManager.getTransaction().begin();
+                    }
+                    return entityManager;
+                })
                 .destroyWith((em, c) -> em.close()));
     }
 

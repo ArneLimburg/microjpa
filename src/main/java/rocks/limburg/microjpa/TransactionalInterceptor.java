@@ -18,13 +18,23 @@ package rocks.limburg.microjpa;
 import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
 import static javax.transaction.Transactional.TxType.REQUIRED;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.Context;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.EntityTransaction;
 import javax.transaction.Transactional;
 
 @Dependent
@@ -33,19 +43,49 @@ import javax.transaction.Transactional;
 @Priority(LIBRARY_AFTER)
 public class TransactionalInterceptor {
 
-    @PersistenceContext(unitName = "test-unit")
-    private EntityManager entityManager;
+    @Inject
+    private BeanManager beanManager;
 
-    public TransactionalInterceptor() {
-        // TODO Auto-generated constructor stub
+    private static ThreadLocal<Boolean> transactionActive = new ThreadLocal<>();
+
+    public static boolean isTransactionActive() {
+        return Optional.ofNullable(transactionActive.get()).orElse(Boolean.FALSE);
     }
+
     @AroundInvoke
     public Object transactional(InvocationContext context) throws Exception {
-        entityManager.getTransaction().begin();
+        List<EntityManager> activeEntityManagers = getActiveEntityManagers();
+        activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
+        transactionActive.set(Boolean.TRUE);
         try {
             return context.proceed();
+        } catch (Exception e) {
+            activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+            throw e;
         } finally {
-            entityManager.getTransaction().commit();
+            transactionActive.remove();
+            activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(completeTransaction());
         }
+    }
+
+    private Consumer<EntityTransaction> completeTransaction() {
+        return t -> {
+            if (t.getRollbackOnly()) {
+                t.rollback();
+            } else {
+                t.commit();
+            }
+        };
+    }
+
+    private List<EntityManager> getActiveEntityManagers() {
+        Set<Bean<? extends EntityManager>> entityManagerBeans = (Set<Bean<? extends EntityManager>>)(Set<?>)beanManager
+                .getBeans(EntityManager.class);
+        List<EntityManager> entityManagers = new ArrayList<>();
+        entityManagerBeans.forEach(bean -> {
+            Context context = beanManager.getContext(bean.getScope());
+            Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
+        });
+        return entityManagers;
     }
 }
