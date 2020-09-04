@@ -17,8 +17,11 @@ package rocks.limburg.microjpa;
 
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,11 +42,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceContexts;
+import javax.persistence.PersistenceProperty;
 import javax.persistence.PersistenceUnits;
 
 public class MicroJpaExtension implements Extension {
 
-    private Set<PersistenceUnit> persistenceUnits = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceUnit, Boolean>());
+    private Map<PersistenceUnit, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
     private Set<PersistenceContext> persistenceContexts = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContext, Boolean>());
 
     public void collectAndReplacePersistenceAnnotations(@Observes ProcessAnnotatedType<?> event) {
@@ -58,31 +62,36 @@ public class MicroJpaExtension implements Extension {
                         .map(PersistenceUnit.Literal::new)
                         .ifPresent(persistenceUnit -> {
                             configurer.add(persistenceUnit);
-                            persistenceUnits.add(persistenceUnit);
+                            persistenceProperties.put(persistenceUnit, new HashMap<>());
                         });
                     ofNullable(configurer.getAnnotated().getAnnotation(javax.persistence.PersistenceContext.class))
-                        .map(PersistenceContext.Literal::new)
                         .ifPresent(persistenceContext -> {
-                            configurer.add(persistenceContext);
-                            persistenceUnits.add(new PersistenceUnit.Literal(persistenceContext.unitName()));
-                            persistenceContexts.add(persistenceContext);
+                            configurer.add(new PersistenceContext.Literal(persistenceContext));
+                            addPersistenceContext(persistenceContext);
                         });
                 });
         }
         annotatedType.getMethods().stream().filter(method -> method.isAnnotationPresent(javax.persistence.PersistenceUnit.class))
-            .forEach(method -> persistenceUnits.add(new PersistenceUnit.Literal(
-                    method.getAnnotation(javax.persistence.PersistenceUnit.class))));
+            .forEach(method -> persistenceProperties.put(new PersistenceUnit.Literal(
+                    method.getAnnotation(javax.persistence.PersistenceUnit.class)), new HashMap<>()));
         annotatedType.getMethods().stream().filter(method -> method.isAnnotationPresent(javax.persistence.PersistenceContext.class))
-            .forEach(method -> persistenceContexts.add(new PersistenceContext.Literal(
-                    method.getAnnotation(javax.persistence.PersistenceContext.class))));
+            .forEach(method -> addPersistenceContext(method.getAnnotation(javax.persistence.PersistenceContext.class)));
         ofNullable(annotatedType.getAnnotation(javax.persistence.PersistenceUnit.class))
-            .ifPresent(persistenceUnit -> persistenceUnits.add(new PersistenceUnit.Literal(persistenceUnit)));
+            .ifPresent(persistenceUnit -> persistenceProperties.put(new PersistenceUnit.Literal(persistenceUnit), new HashMap<>()));
         ofNullable(annotatedType.getAnnotation(javax.persistence.PersistenceContext.class))
-            .ifPresent(persistenceContext -> persistenceContexts.add(new PersistenceContext.Literal(persistenceContext)));
+            .ifPresent(persistenceContext -> addPersistenceContext(persistenceContext));
         ofNullable(annotatedType.getAnnotation(PersistenceUnits.class)).ifPresent(units -> stream(units.value())
-            .forEach(persistenceUnit -> persistenceUnits.add(new PersistenceUnit.Literal(persistenceUnit))));
+            .forEach(persistenceUnit -> persistenceProperties.put(new PersistenceUnit.Literal(persistenceUnit), new HashMap<>())));
         ofNullable(annotatedType.getAnnotation(PersistenceContexts.class)).ifPresent(contexts -> stream(contexts.value())
-            .forEach(persistenceContext -> persistenceContexts.add(new PersistenceContext.Literal(persistenceContext))));
+            .forEach(persistenceContext -> addPersistenceContext(persistenceContext)));
+    }
+
+    private void addPersistenceContext(javax.persistence.PersistenceContext persistenceContext) {
+        PersistenceContext.Literal literal = new PersistenceContext.Literal(persistenceContext);
+        persistenceContexts.add(literal);
+        PersistenceUnit.Literal persistenceUnit = new PersistenceUnit.Literal(persistenceContext.unitName());
+        persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>()).putAll(
+                stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
 
     public void enableTransactionalInterceptors(@Observes AfterTypeDiscovery event) {
@@ -90,12 +99,12 @@ public class MicroJpaExtension implements Extension {
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
-        persistenceUnits.forEach(persistenceUnit -> event
+        persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
                 .addType(EntityManagerFactory.class)
-                .addQualifiers(persistenceUnit)
-                .createWith(c -> Persistence.createEntityManagerFactory(persistenceUnit.unitName()))
+                .addQualifiers(entry.getKey())
+                .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName(), entry.getValue()))
                 .destroyWith((emf, c) -> emf.close()));
         persistenceContexts.forEach(persistenceContext -> event
                 .<EntityManager>addBean()
