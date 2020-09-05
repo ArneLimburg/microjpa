@@ -3,8 +3,4 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
         http://xmlns.jcp.org/xml/ns/javaee/beans_2_0.xsd"
-  bean-discovery-mode="all">
-  <interceptors>
-    <class>rocks.limburg.microjpa.TransactionalInterceptor</class>
-  </interceptors>
-</beans>
+  bean-discovery-mode="annotated" />

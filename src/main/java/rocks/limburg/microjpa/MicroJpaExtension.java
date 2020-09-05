@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.AfterTypeDiscovery;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
@@ -92,10 +91,6 @@ public class MicroJpaExtension implements Extension {
         PersistenceUnit.Literal persistenceUnit = new PersistenceUnit.Literal(persistenceContext.unitName());
         persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>()).putAll(
                 stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
-    }
-
-    public void enableTransactionalInterceptors(@Observes AfterTypeDiscovery event) {
-        event.getInterceptors().add(TransactionalInterceptor.class);
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
