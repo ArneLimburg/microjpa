@@ -15,13 +15,22 @@
  */
 package rocks.limburg.microjpa;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+public class Relation {
 
-public class ExtendedTestParentRepository {
+    private TestParent parent;
+    private TestChild child;
 
-    @PersistenceContext(unitName = "test-unit", type = PersistenceContextType.EXTENDED)
-    private EntityManager entityManager;
+    public Relation(TestParent parent, TestChild child) {
+        this.parent = parent;
+        this.child = child;
+    }
+
+    public TestParent getParent() {
+        return parent;
+    }
+
+    public TestChild getChild() {
+        return child;
+    }
 
 }

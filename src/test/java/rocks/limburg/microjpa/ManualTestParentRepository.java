@@ -17,12 +17,21 @@ package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 @ApplicationScoped
-public class UnsynchronizedTestChildRepository {
+public class ManualTestParentRepository {
 
-    @PersistenceContext(unitName = "test-unit", type = PersistenceContextType.EXTENDED)
-    private EntityManager entityManager;
+    @PersistenceUnit(unitName = "test-unit")
+    private EntityManagerFactory entityManagerFactory;
+
+    public TestParent find(long id) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            return entityManager.find(TestParent.class, id);
+        } finally {
+            entityManager.close();
+        }
+    }
 }

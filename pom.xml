@@ -50,6 +50,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.deltaspike.cdictrl</groupId>
+      <artifactId>deltaspike-cdictrl-api</artifactId>
+      <version>1.9.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
       <version>5.4.21.Final</version>
@@ -211,6 +217,12 @@
           <version>2.0.17</version>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.apache.deltaspike.cdictrl</groupId>
+          <artifactId>deltaspike-cdictrl-owb</artifactId>
+          <version>1.9.4</version>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
@@ -220,6 +232,13 @@
           <groupId>org.jboss.weld.se</groupId>
           <artifactId>weld-se-core</artifactId>
           <version>3.1.4.Final</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.deltaspike.cdictrl</groupId>
+          <artifactId>deltaspike-cdictrl-weld</artifactId>
+          <version>1.9.4</version>
+          <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>

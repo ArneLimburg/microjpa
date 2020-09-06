@@ -15,13 +15,24 @@
  */
 package rocks.limburg.microjpa;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-public class UnsynchronizedTestParentRepository {
+@ApplicationScoped
+public class ManualTestRelationService {
 
-    @PersistenceContext(unitName = "test-unit", type = PersistenceContextType.EXTENDED)
-    private EntityManager entityManager;
+    @Inject
+    private ManualTestParentRepository parentRepository;
+    @Inject
+    private ManualTestChildRepository childRepository;
 
+    public void persist(TestChild testChild) {
+        childRepository.persist(testChild);
+    }
+
+    public Relation findParentAndChild(long parentId) {
+        TestParent parent = parentRepository.find(parentId);
+        TestChild child = childRepository.findByParentId(parentId);
+        return new Relation(parent, child);
+    }
 }

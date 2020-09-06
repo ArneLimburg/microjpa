@@ -15,7 +15,8 @@
  */
 package rocks.limburg.microjpa;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.se.SeContainer;
@@ -27,12 +28,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class SinglePersistenceUnitTest {
+public class ManualPersistenceUnitTest {
 
     private SeContainer cdiContainer;
     private ContextControl contextControl;
 
-    private TransactionalTestRelationService testService;
+    private ManualTestRelationService testService;
     private long parentId;
 
     @BeforeEach
@@ -41,7 +42,7 @@ public class SinglePersistenceUnitTest {
         contextControl = cdiContainer.select(ContextControl.class).get();
         contextControl.startContext(RequestScoped.class);
 
-        testService = cdiContainer.select(TransactionalTestRelationService.class).get();
+        testService = cdiContainer.select(ManualTestRelationService.class).get();
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();
@@ -54,11 +55,12 @@ public class SinglePersistenceUnitTest {
     }
 
     @Test
-    @DisplayName("found parent equals parent of found child (same EntityManager is used)")
+    @DisplayName("found parent's id equals parent's id of found child but they are not same (different EntityManagers are used)")
     public void find() {
 
         Relation parentAndChild = testService.findParentAndChild(parentId);
 
-        assertSame(parentAndChild.getChild().getParent(), parentAndChild.getParent());
+        assertNotSame(parentAndChild.getChild().getParent(), parentAndChild.getParent());
+        assertEquals(parentAndChild.getChild().getParent().getId(), parentAndChild.getParent().getId());
     }
 }

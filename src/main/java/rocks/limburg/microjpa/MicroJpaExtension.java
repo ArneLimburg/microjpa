@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedField;
@@ -120,7 +121,7 @@ public class MicroJpaExtension implements Extension {
                 .destroyWith((emf, c) -> emf.close()));
         persistenceContexts.forEach(persistenceContext -> event
                 .<EntityManager>addBean()
-                .scope(ApplicationScoped.class)
+                .scope(RequestScoped.class)
                 .addType(EntityManager.class)
                 .addQualifiers(persistenceContext)
                 .createWith(c -> {

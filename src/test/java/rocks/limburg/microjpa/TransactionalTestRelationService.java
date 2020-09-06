@@ -19,7 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class TestRelationService {
+public class TransactionalTestRelationService {
 
     @Inject
     private TransactionalTestParentRepository parentRepository;
@@ -34,24 +34,5 @@ public class TestRelationService {
         TestParent parent = parentRepository.find(parentId);
         TestChild child = childRepository.findByParentId(parentId);
         return new Relation(parent, child);
-    }
-
-    public static class Relation {
-
-        private TestParent parent;
-        private TestChild child;
-
-        public Relation(TestParent parent, TestChild child) {
-            this.parent = parent;
-            this.child = child;
-        }
-
-        public TestParent getParent() {
-            return parent;
-        }
-
-        public TestChild getChild() {
-            return child;
-        }
     }
 }
