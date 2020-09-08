@@ -17,18 +17,14 @@ package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @ApplicationScoped
-public class TransactionalTestRelationService {
+public class ExtendedTestRelationService {
 
     @Inject
-    private TransactionalTestParentRepository parentRepository;
+    private ExtendedTestParentRepository parentRepository;
     @Inject
-    private TransactionalTestChildRepository childRepository;
-    @PersistenceContext(unitName = "test-unit")
-    private EntityManager entityManager;
+    private ExtendedTestChildRepository childRepository;
 
     public void persist(TestChild testChild) {
         childRepository.persist(testChild);

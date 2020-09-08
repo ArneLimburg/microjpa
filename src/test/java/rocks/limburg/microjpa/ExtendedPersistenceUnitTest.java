@@ -15,6 +15,7 @@
  */
 package rocks.limburg.microjpa;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import javax.enterprise.context.RequestScoped;
@@ -27,27 +28,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class SinglePersistenceUnitTest {
+public class ExtendedPersistenceUnitTest {
 
     private SeContainer cdiContainer;
     private ContextControl contextControl;
 
-    private TransactionalTestRelationService testService;
+    private ExtendedTestRelationService testService;
+    private ExtendedTestChildRepository testChildRepository;
     private long parentId;
 
     @BeforeEach
     public void startCdi() {
         cdiContainer = SeContainerInitializer.newInstance().initialize();
         contextControl = cdiContainer.select(ContextControl.class).get();
-
         contextControl.startContext(RequestScoped.class);
-        testService = cdiContainer.select(TransactionalTestRelationService.class).get();
+
+        testService = cdiContainer.select(ExtendedTestRelationService.class).get();
+        testChildRepository = cdiContainer.select(ExtendedTestChildRepository.class).get();
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();
-        contextControl.stopContext(RequestScoped.class);
-
-        contextControl.startContext(RequestScoped.class);
     }
 
     @AfterEach
@@ -63,5 +63,15 @@ public class SinglePersistenceUnitTest {
         Relation parentAndChild = testService.findParentAndChild(parentId);
 
         assertSame(parentAndChild.getChild().getParent(), parentAndChild.getParent());
+    }
+
+    @Test
+    @DisplayName("persist joins to transaction after find")
+    public void persist() {
+
+        testService.findParentAndChild(parentId);
+        testService.persist(new TestChild());
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
     }
 }

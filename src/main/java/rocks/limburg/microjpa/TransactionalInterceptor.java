@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.Context;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -54,17 +55,16 @@ public class TransactionalInterceptor {
 
     @AroundInvoke
     public Object transactional(InvocationContext context) throws Exception {
-        List<EntityManager> activeEntityManagers = getActiveEntityManagers();
-        activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
+        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
         transactionActive.set(Boolean.TRUE);
         try {
             return context.proceed();
         } catch (Exception e) {
-            activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
             throw e;
         } finally {
             transactionActive.remove();
-            activeEntityManagers.stream().map(EntityManager::getTransaction).forEach(completeTransaction());
+            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(completeTransaction());
         }
     }
 
@@ -80,7 +80,7 @@ public class TransactionalInterceptor {
 
     private List<EntityManager> getActiveEntityManagers() {
         Set<Bean<? extends EntityManager>> entityManagerBeans = (Set<Bean<? extends EntityManager>>)(Set<?>)beanManager
-                .getBeans(EntityManager.class);
+                .getBeans(EntityManager.class, new Any.Literal());
         List<EntityManager> entityManagers = new ArrayList<>();
         entityManagerBeans.forEach(bean -> {
             Context context = beanManager.getContext(bean.getScope());
