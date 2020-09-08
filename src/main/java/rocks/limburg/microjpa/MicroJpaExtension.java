@@ -112,6 +112,7 @@ public class MicroJpaExtension implements Extension {
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
+        persistenceProperties.values().forEach(properties -> properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties()));
         persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
