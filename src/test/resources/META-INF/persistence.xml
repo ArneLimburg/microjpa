@@ -26,4 +26,9 @@
         value="drop-and-create" />
     </properties>
   </persistence-unit>
+  <persistence-unit
+    name="production-unit"
+    transaction-type="JTA">
+    <jta-data-source>java:comp/env/ProductionDS</jta-data-source>
+  </persistence-unit>
 </persistence>

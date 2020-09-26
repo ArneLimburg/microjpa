@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toMap;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,7 +58,9 @@ import javax.persistence.PersistenceUnits;
 
 public class MicroJpaExtension implements Extension {
 
-    private static final Annotation NONBINDING = new AnnotationLiteral<Nonbinding>() { };
+    private static final String JTA_DATA_SOURCE_PROPERTY = "javax.persistence.jtaDataSource";
+    private static final PersistenceProperty[] EMPTY_PERSISTENCE_PROPERTIES = new PersistenceProperty[0];
+    private static final Annotation NONBINDING_LITERAL = new AnnotationLiteral<Nonbinding>() { };
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
 
@@ -66,12 +69,12 @@ public class MicroJpaExtension implements Extension {
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.configureQualifier(PersistenceUnit.class)
-            .filterMethods(m -> m.getJavaMember().getName().equals(NAME)).forEach(m -> m.add(NONBINDING));
+            .filterMethods(m -> m.getJavaMember().getName().equals(NAME)).forEach(m -> m.add(NONBINDING_LITERAL));
         event.configureQualifier(PersistenceContext.class)
-            .filterMethods(m -> NONBINDING_PROPERTIES.contains(m.getJavaMember().getName())).forEach(m -> m.add(NONBINDING));
+            .filterMethods(m -> NONBINDING_PROPERTIES.contains(m.getJavaMember().getName())).forEach(m -> m.add(NONBINDING_LITERAL));
     }
 
-    public void collectAndReplacePersistenceAnnotations(@Observes ProcessAnnotatedType<?> event) {
+    public void configurePersistenceAnnotations(@Observes ProcessAnnotatedType<?> event) {
         AnnotatedType<?> annotatedType = event.getAnnotatedType();
 
         Consumer<PersistenceUnit> initPersistenceProperties
@@ -105,14 +108,25 @@ public class MicroJpaExtension implements Extension {
     }
 
     private void addPersistenceContext(PersistenceContext persistenceContext) {
-        persistenceContexts.add(persistenceContext);
+        PersistenceProperty[] overridingProperties = EMPTY_PERSISTENCE_PROPERTIES;
+        for (Iterator<PersistenceContext> i = persistenceContexts.iterator(); i.hasNext();) {
+            PersistenceContext context = i.next();
+            if (context.unitName().equals(persistenceContext.unitName())
+                    && context.type() == persistenceContext.type()
+                    && context.synchronization() == persistenceContext.synchronization()) {
+                overridingProperties = context.properties();
+                i.remove();
+                break;
+            }
+        }
+        persistenceContexts.add(new PersistenceContextLiteral(persistenceContext, overridingProperties));
         PersistenceUnitLiteral persistenceUnit = new PersistenceUnitLiteral(persistenceContext);
         persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>())
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
-        persistenceProperties.values().forEach(properties -> properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties()));
+        persistenceProperties.values().forEach(properties -> overrideProperties(properties));
         persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
@@ -136,6 +150,13 @@ public class MicroJpaExtension implements Extension {
                     return entityManager;
                 })
                 .destroyWith((em, c) -> em.close()));
+    }
+
+    private void overrideProperties(Map<String, String> properties) {
+        properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties());
+        ofNullable(properties.get(JTA_DATA_SOURCE_PROPERTY))
+            .filter(String::isEmpty)
+            .ifPresent(jtaDataSource -> properties.put(JTA_DATA_SOURCE_PROPERTY, null));
     }
 
     private <F extends AnnotatedField<?>> boolean isPersistenceAnnotationPresent(Set<F> fields) {

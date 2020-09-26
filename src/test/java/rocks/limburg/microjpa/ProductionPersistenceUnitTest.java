@@ -15,12 +15,13 @@
  */
 package rocks.limburg.microjpa;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceProperty;
 
 import org.apache.deltaspike.cdise.api.ContextControl;
 import org.junit.jupiter.api.AfterEach;
@@ -28,28 +29,34 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class ExtendedPersistenceUnitTest {
+@PersistenceContext(unitName = "production-unit", properties
+    = {
+            @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
+            @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = ""),
+            @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
+            @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
+            @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
+            @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
+            @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
+    })
+public class ProductionPersistenceUnitTest {
 
     private SeContainer cdiContainer;
     private ContextControl contextControl;
 
-    private ExtendedTestRelationService testService;
-    private ExtendedTestChildRepository testChildRepository;
+    private TransactionalProductionRelationService productionService;
     private long parentId;
 
     @BeforeEach
     public void startCdi() {
         cdiContainer = SeContainerInitializer.newInstance().initialize();
         contextControl = cdiContainer.select(ContextControl.class).get();
-        contextControl.startContext(RequestScoped.class);
 
-        testService = cdiContainer.select(ExtendedTestRelationService.class).get();
-        testChildRepository = cdiContainer.select(ExtendedTestChildRepository.class).get();
-        TestChild testChild = new TestChild(new TestParent());
-        testService.persist(testChild);
-        parentId = testChild.getParent().getId();
-        contextControl.stopContext(RequestScoped.class);
         contextControl.startContext(RequestScoped.class);
+        productionService = cdiContainer.select(TransactionalProductionRelationService.class).get();
+        TestChild testChild = new TestChild(new TestParent());
+        productionService.persist(testChild);
+        parentId = testChild.getParent().getId();
     }
 
     @AfterEach
@@ -62,18 +69,8 @@ public class ExtendedPersistenceUnitTest {
     @DisplayName("found parent equals parent of found child (same EntityManager is used)")
     public void find() {
 
-        Relation parentAndChild = testService.findParentAndChild(parentId);
+        Relation parentAndChild = productionService.findParentAndChild(parentId);
 
         assertSame(parentAndChild.getChild().getParent(), parentAndChild.getParent());
-    }
-
-    @Test
-    @DisplayName("persist joins to transaction after find")
-    public void persist() {
-
-        testService.findParentAndChild(parentId);
-        testService.persist(new TestChild());
-        testChildRepository.clear();
-        assertEquals(2, testChildRepository.findAll().size());
     }
 }
