@@ -64,7 +64,7 @@ public class MicroJpaExtension implements Extension {
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
 
-    private Map<PersistenceUnit, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
+    private Map<PersistenceUnitKey, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
     private Set<PersistenceContext> persistenceContexts = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContext, Boolean>());
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
@@ -78,7 +78,7 @@ public class MicroJpaExtension implements Extension {
         AnnotatedType<?> annotatedType = event.getAnnotatedType();
 
         Consumer<PersistenceUnit> initPersistenceProperties
-            = persistenceUnit -> persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>());
+            = persistenceUnit -> persistenceProperties.computeIfAbsent(new PersistenceUnitKey(persistenceUnit), p -> new HashMap<>());
         Consumer<PersistenceContext> addPersistenceContext = persistenceContext -> addPersistenceContext(persistenceContext);
 
         if (isPersistenceAnnotationPresent(annotatedType.getFields())) {
@@ -120,7 +120,7 @@ public class MicroJpaExtension implements Extension {
             }
         }
         persistenceContexts.add(new PersistenceContextLiteral(persistenceContext, overridingProperties));
-        PersistenceUnitLiteral persistenceUnit = new PersistenceUnitLiteral(persistenceContext);
+        PersistenceUnitKey persistenceUnit = new PersistenceUnitKey(persistenceContext);
         persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>())
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
@@ -131,8 +131,8 @@ public class MicroJpaExtension implements Extension {
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
                 .addType(EntityManagerFactory.class)
-                .addQualifiers(entry.getKey())
-                .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName(), entry.getValue()))
+                .addQualifiers(new PersistenceUnitLiteral(entry.getKey().name, entry.getKey().unitName))
+                .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName, entry.getValue()))
                 .destroyWith((emf, c) -> emf.close()));
         persistenceContexts.forEach(persistenceContext -> event
                 .<EntityManager>addBean()
@@ -165,5 +165,38 @@ public class MicroJpaExtension implements Extension {
 
     private <F extends AnnotatedField<?>> boolean isPersistenceAnnotationPresent(F field) {
         return field.isAnnotationPresent(PersistenceContext.class) || field.isAnnotationPresent(PersistenceUnit.class);
+    }
+
+    private static class PersistenceUnitKey {
+
+        private String name;
+        private String unitName;
+
+        PersistenceUnitKey(PersistenceUnit unit) {
+            name = unit.name();
+            unitName = unit.unitName();
+        }
+
+        PersistenceUnitKey(PersistenceContext context) {
+            name = context.name();
+            unitName = context.unitName();
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode() ^ unitName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (other == null || other.getClass() != getClass()) {
+                return false;
+            }
+            PersistenceUnitKey otherKey = (PersistenceUnitKey)other;
+            return name.equals(otherKey.name) && unitName.equals(otherKey.unitName);
+        }
     }
 }

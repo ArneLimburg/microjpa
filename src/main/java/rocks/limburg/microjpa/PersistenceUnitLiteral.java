@@ -31,6 +31,11 @@ public class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnitLit
         unitName = context.unitName();
     }
 
+    PersistenceUnitLiteral(String name, String unitName) {
+        this.name = name;
+        this.unitName = unitName;
+    }
+
     @Override
     public String name() {
         return name;
