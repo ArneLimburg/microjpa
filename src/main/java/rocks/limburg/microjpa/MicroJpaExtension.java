@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.toMap;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,10 +50,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
 import javax.persistence.PersistenceContexts;
 import javax.persistence.PersistenceProperty;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnits;
+import javax.persistence.SynchronizationType;
 
 public class MicroJpaExtension implements Extension {
 
@@ -65,7 +66,8 @@ public class MicroJpaExtension implements Extension {
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
 
     private Map<PersistenceUnitKey, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
-    private Set<PersistenceContext> persistenceContexts = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContext, Boolean>());
+    private Set<PersistenceContextKey> persistenceContexts
+        = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextKey, Boolean>());
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.configureQualifier(PersistenceUnit.class)
@@ -108,20 +110,9 @@ public class MicroJpaExtension implements Extension {
     }
 
     private void addPersistenceContext(PersistenceContext persistenceContext) {
-        PersistenceProperty[] overridingProperties = EMPTY_PERSISTENCE_PROPERTIES;
-        for (Iterator<PersistenceContext> i = persistenceContexts.iterator(); i.hasNext();) {
-            PersistenceContext context = i.next();
-            if (context.unitName().equals(persistenceContext.unitName())
-                    && context.type() == persistenceContext.type()
-                    && context.synchronization() == persistenceContext.synchronization()) {
-                overridingProperties = context.properties();
-                i.remove();
-                break;
-            }
-        }
-        persistenceContexts.add(new PersistenceContextLiteral(persistenceContext, overridingProperties));
-        PersistenceUnitKey persistenceUnit = new PersistenceUnitKey(persistenceContext);
-        persistenceProperties.computeIfAbsent(persistenceUnit, p -> new HashMap<>())
+        persistenceContexts.add(new PersistenceContextKey(persistenceContext));
+        PersistenceUnitKey persistenceUnitKey = new PersistenceUnitKey(persistenceContext);
+        persistenceProperties.computeIfAbsent(persistenceUnitKey, p -> new HashMap<>())
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
 
@@ -131,17 +122,17 @@ public class MicroJpaExtension implements Extension {
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
                 .addType(EntityManagerFactory.class)
-                .addQualifiers(new PersistenceUnitLiteral(entry.getKey().name, entry.getKey().unitName))
+                .addQualifiers(entry.getKey().toUnitAnnotation())
                 .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName, entry.getValue()))
                 .destroyWith((emf, c) -> emf.close()));
-        persistenceContexts.forEach(persistenceContext -> event
+        persistenceContexts.forEach(persistenceContextKey -> event
                 .<EntityManager>addBean()
                 .scope(RequestScoped.class)
                 .addType(EntityManager.class)
-                .addQualifiers(persistenceContext)
+                .addQualifiers(persistenceContextKey.toContextAnnotation())
                 .createWith(c -> {
                     EntityManager entityManager = CDI.current()
-                        .select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext))
+                        .select(EntityManagerFactory.class, persistenceContextKey.toUnitAnnotation())
                         .get()
                         .createEntityManager();
                     if (TransactionalInterceptor.isTransactionActive()) {
@@ -182,6 +173,21 @@ public class MicroJpaExtension implements Extension {
             unitName = context.unitName();
         }
 
+        public PersistenceUnit toUnitAnnotation() {
+            return new PersistenceUnitLiteral() {
+
+                @Override
+                public String name() {
+                    return name;
+                }
+
+                @Override
+                public String unitName() {
+                    return unitName;
+                }
+            };
+        }
+
         @Override
         public int hashCode() {
             return name.hashCode() ^ unitName.hashCode();
@@ -198,5 +204,89 @@ public class MicroJpaExtension implements Extension {
             PersistenceUnitKey otherKey = (PersistenceUnitKey)other;
             return name.equals(otherKey.name) && unitName.equals(otherKey.unitName);
         }
+    }
+
+    private static class PersistenceContextKey {
+
+        private String name;
+        private String unitName;
+        private PersistenceContextType type;
+        private SynchronizationType synchronization;
+
+        PersistenceContextKey(PersistenceContext context) {
+            name = context.name();
+            unitName = context.unitName();
+            type = context.type();
+            synchronization = context.synchronization();
+        }
+
+        public PersistenceUnit toUnitAnnotation() {
+            return new PersistenceUnitLiteral() {
+
+                @Override
+                public String name() {
+                    return name;
+                }
+
+                @Override
+                public String unitName() {
+                    return unitName;
+                }
+            };
+        }
+
+        public PersistenceContext toContextAnnotation() {
+            return new PersistenceContextLiteral() {
+
+                @Override
+                public String name() {
+                    return name;
+                }
+
+                @Override
+                public String unitName() {
+                    return unitName;
+                }
+
+                @Override
+                public PersistenceContextType type() {
+                    return type;
+                }
+
+                @Override
+                public SynchronizationType synchronization() {
+                    return synchronization;
+                }
+
+                @Override
+                public PersistenceProperty[] properties() {
+                    return EMPTY_PERSISTENCE_PROPERTIES;
+                }
+            };
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode() ^ unitName.hashCode() ^ type.hashCode() ^ synchronization.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (other == null || other.getClass() != getClass()) {
+                return false;
+            }
+            PersistenceContextKey otherKey = (PersistenceContextKey)other;
+            return name.equals(otherKey.name) && unitName.equals(otherKey.unitName)
+                && type.equals(otherKey.type) && synchronization.equals(otherKey.synchronization);
+        }
+    }
+
+    private abstract static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
+    }
+
+    private abstract static class PersistenceContextLiteral extends AnnotationLiteral<PersistenceContext> implements PersistenceContext {
     }
 }
