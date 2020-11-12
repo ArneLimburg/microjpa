@@ -55,16 +55,21 @@ public class TransactionalInterceptor {
 
     @AroundInvoke
     public Object transactional(InvocationContext context) throws Exception {
-        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
-        transactionActive.set(Boolean.TRUE);
+        boolean beginInThisMethod = !isTransactionActive();
+        if (beginInThisMethod) {
+            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
+            transactionActive.set(Boolean.TRUE);
+        }
         try {
             return context.proceed();
         } catch (Exception e) {
             getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
             throw e;
         } finally {
-            transactionActive.remove();
-            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(completeTransaction());
+            if (beginInThisMethod) {
+                transactionActive.remove();
+                getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(completeTransaction());
+            }
         }
     }
 

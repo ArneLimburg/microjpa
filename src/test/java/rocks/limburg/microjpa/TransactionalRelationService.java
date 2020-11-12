@@ -16,7 +16,9 @@
 package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.transaction.Transactional;
 
+@Transactional
 @ApplicationScoped
 public class TransactionalRelationService
     extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
