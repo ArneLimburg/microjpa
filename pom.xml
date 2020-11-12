@@ -8,7 +8,7 @@
 
   <groupId>rocks.limburg.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>0.9.3</version>
+  <version>0.9.4-SNAPSHOT</version>
 
   <name>cdimock</name>
   <url>http://microjpa.limburg.rocks</url>
@@ -178,22 +178,22 @@
                     <limit>
                       <counter>BRANCH</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.95</minimum>
+                      <minimum>0.93</minimum>
                     </limit>
                     <limit>
                       <counter>COMPLEXITY</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.95</minimum>
+                      <minimum>0.93</minimum>
                     </limit>
                     <limit>
                       <counter>METHOD</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>1</minimum>
+                      <minimum>0.94</minimum>
                     </limit>
                     <limit>
                       <counter>CLASS</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>1</minimum>
+                      <minimum>1.00</minimum>
                     </limit>
                   </limits>
                 </rule>
