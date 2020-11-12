@@ -22,13 +22,13 @@ import javax.transaction.Transactional;
 
 @Transactional
 @ApplicationScoped
-public class TransactionalTestParentRepository {
+public class TransactionalChildRepository extends AbstractChildRepository {
 
     @PersistenceContext(unitName = "test-unit")
     private EntityManager entityManager;
 
-    public TestParent find(long id) {
-        return entityManager.find(TestParent.class, id);
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
-
 }

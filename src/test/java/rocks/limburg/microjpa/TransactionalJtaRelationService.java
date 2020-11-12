@@ -15,6 +15,9 @@
  */
 package rocks.limburg.microjpa;
 
-public class ExtendedPersistenceUnitTest
-    extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class TransactionalJtaRelationService
+    extends AbstractRelationService<TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
 }

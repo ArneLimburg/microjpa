@@ -17,21 +17,18 @@ package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
+@Transactional
 @ApplicationScoped
-public class ManualTestParentRepository {
+public class TransactionalParentRepository extends AbstractParentRepository {
 
-    @PersistenceUnit(unitName = "test-unit")
-    private EntityManagerFactory entityManagerFactory;
+    @PersistenceContext(unitName = "test-unit")
+    private EntityManager entityManager;
 
-    public TestParent find(long id) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        try {
-            return entityManager.find(TestParent.class, id);
-        } finally {
-            entityManager.close();
-        }
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
 }

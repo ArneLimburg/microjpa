@@ -15,20 +15,13 @@
  */
 package rocks.limburg.microjpa;
 
-import static javax.persistence.PersistenceContextType.EXTENDED;
-
-import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
-@ApplicationScoped
-public class ExtendedTestParentRepository {
-
-    @PersistenceContext(unitName = "test-unit", type = EXTENDED)
-    private EntityManager entityManager;
+public abstract class AbstractParentRepository {
 
     public TestParent find(long id) {
-        return entityManager.find(TestParent.class, id);
+        return getEntityManager().find(TestParent.class, id);
     }
 
+    protected abstract EntityManager getEntityManager();
 }

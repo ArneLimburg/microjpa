@@ -22,18 +22,13 @@ import javax.transaction.Transactional;
 
 @Transactional
 @ApplicationScoped
-public class TransactionalProductionChildRepository {
+public class TransactionalJtaChildRepository extends AbstractChildRepository {
 
-    @PersistenceContext(unitName = "production-unit")
+    @PersistenceContext(unitName = "jta-unit")
     private EntityManager entityManager;
 
-    public void persist(TestChild testChild) {
-        entityManager.persist(testChild);
-    }
-
-    public TestChild findByParentId(long parentId) {
-        return entityManager.createNamedQuery(TestChild.FIND_BY_PARENT_ID, TestChild.class)
-                .setParameter("parentId", parentId)
-                .getSingleResult();
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
 }

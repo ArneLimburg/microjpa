@@ -15,25 +15,33 @@
  */
 package rocks.limburg.microjpa;
 
-import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
+
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.transaction.Transactional;
 
-@Transactional
-@ApplicationScoped
-public class TransactionalTestChildRepository {
+public abstract class AbstractChildRepository {
 
-    @PersistenceContext(unitName = "test-unit")
-    private EntityManager entityManager;
-
+    @Transactional
     public void persist(TestChild testChild) {
-        entityManager.persist(testChild);
+        getEntityManager().persist(testChild);
+    }
+
+    public List<TestChild> findAll() {
+        CriteriaQuery<TestChild> q = getEntityManager().getCriteriaBuilder().createQuery(TestChild.class);
+        return getEntityManager().createQuery(q.select(q.from(TestChild.class))).getResultList();
     }
 
     public TestChild findByParentId(long parentId) {
-        return entityManager.createNamedQuery(TestChild.FIND_BY_PARENT_ID, TestChild.class)
+        return getEntityManager().createNamedQuery(TestChild.FIND_BY_PARENT_ID, TestChild.class)
                 .setParameter("parentId", parentId)
                 .getSingleResult();
     }
+
+    public void clear() {
+        getEntityManager().clear();
+    }
+
+    protected abstract EntityManager getEntityManager();
 }

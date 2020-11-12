@@ -18,41 +18,11 @@ package rocks.limburg.microjpa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-
-import org.apache.deltaspike.cdise.api.ContextControl;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class ManualPersistenceUnitTest {
-
-    private SeContainer cdiContainer;
-    private ContextControl contextControl;
-
-    private ManualTestRelationService testService;
-    private long parentId;
-
-    @BeforeEach
-    public void startCdi() {
-        cdiContainer = SeContainerInitializer.newInstance().initialize();
-        contextControl = cdiContainer.select(ContextControl.class).get();
-        contextControl.startContext(RequestScoped.class);
-
-        testService = cdiContainer.select(ManualTestRelationService.class).get();
-        TestChild testChild = new TestChild(new TestParent());
-        testService.persist(testChild);
-        parentId = testChild.getParent().getId();
-    }
-
-    @AfterEach
-    public void shutDownCdi() {
-        contextControl.stopContext(RequestScoped.class);
-        cdiContainer.close();
-    }
+public class ManualPersistenceUnitTest
+    extends AbstractPersistenceUnitTest<ManualRelationService, ManualParentRepository, ManualChildRepository> {
 
     @Test
     @DisplayName("found parent's id equals parent's id of found child but they are not same (different EntityManagers are used)")

@@ -16,27 +16,19 @@
 package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
+@Transactional
 @ApplicationScoped
-public class TransactionalProductionRelationService {
+public class TransactionalJtaParentRepository extends AbstractParentRepository {
 
-    @Inject
-    private TransactionalProductionParentRepository parentRepository;
-    @Inject
-    private TransactionalProductionChildRepository childRepository;
-    @PersistenceContext(unitName = "production-unit")
+    @PersistenceContext(unitName = "jta-unit")
     private EntityManager entityManager;
 
-    public void persist(TestChild testChild) {
-        childRepository.persist(testChild);
-    }
-
-    public Relation findParentAndChild(long parentId) {
-        TestParent parent = parentRepository.find(parentId);
-        TestChild child = childRepository.findByParentId(parentId);
-        return new Relation(parent, child);
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
 }

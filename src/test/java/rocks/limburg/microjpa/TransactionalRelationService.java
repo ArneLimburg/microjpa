@@ -16,19 +16,8 @@
 package rocks.limburg.microjpa;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 
-@Transactional
 @ApplicationScoped
-public class TransactionalProductionParentRepository {
-
-    @PersistenceContext(unitName = "production-unit")
-    private EntityManager entityManager;
-
-    public TestParent find(long id) {
-        return entityManager.find(TestParent.class, id);
-    }
-
+public class TransactionalRelationService
+    extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
 }

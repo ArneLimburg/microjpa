@@ -10,7 +10,7 @@
   <artifactId>microjpa</artifactId>
   <version>0.9.4-SNAPSHOT</version>
 
-  <name>cdimock</name>
+  <name>microjpa</name>
   <url>http://microjpa.limburg.rocks</url>
   <description>
     A framework to support resource local EntityManagers for injection into

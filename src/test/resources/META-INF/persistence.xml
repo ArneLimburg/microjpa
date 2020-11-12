@@ -27,7 +27,7 @@
     </properties>
   </persistence-unit>
   <persistence-unit
-    name="production-unit"
+    name="jta-unit"
     transaction-type="JTA">
     <jta-data-source>java:comp/env/ProductionDS</jta-data-source>
   </persistence-unit>

@@ -15,13 +15,14 @@
  */
 package rocks.limburg.microjpa;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import java.lang.reflect.ParameterizedType;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceProperty;
 
 import org.apache.deltaspike.cdise.api.ContextControl;
 import org.junit.jupiter.api.AfterEach;
@@ -29,34 +30,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@PersistenceContext(unitName = "production-unit", properties
-    = {
-            @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
-            @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = ""),
-            @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
-            @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
-    })
-public class ProductionPersistenceUnitTest {
+public abstract class AbstractPersistenceUnitTest
+    <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
     private SeContainer cdiContainer;
     private ContextControl contextControl;
 
-    private TransactionalProductionRelationService productionService;
-    private long parentId;
+    protected S testService;
+    protected C testChildRepository;
+    protected long parentId;
 
     @BeforeEach
     public void startCdi() {
         cdiContainer = SeContainerInitializer.newInstance().initialize();
         contextControl = cdiContainer.select(ContextControl.class).get();
-
         contextControl.startContext(RequestScoped.class);
-        productionService = cdiContainer.select(TransactionalProductionRelationService.class).get();
+
+        ParameterizedType genericSuperclass = (ParameterizedType)getClass().getGenericSuperclass();
+        testService = cdiContainer.select((Class<S>)genericSuperclass.getActualTypeArguments()[0]).get();
+        testChildRepository = cdiContainer.select((Class<C>)genericSuperclass.getActualTypeArguments()[2]).get();
         TestChild testChild = new TestChild(new TestParent());
-        productionService.persist(testChild);
+        testService.persist(testChild);
         parentId = testChild.getParent().getId();
+        contextControl.stopContext(RequestScoped.class);
+        contextControl.startContext(RequestScoped.class);
     }
 
     @AfterEach
@@ -69,8 +66,18 @@ public class ProductionPersistenceUnitTest {
     @DisplayName("found parent equals parent of found child (same EntityManager is used)")
     public void find() {
 
-        Relation parentAndChild = productionService.findParentAndChild(parentId);
+        Relation parentAndChild = testService.findParentAndChild(parentId);
 
         assertSame(parentAndChild.getChild().getParent(), parentAndChild.getParent());
+    }
+
+    @Test
+    @DisplayName("persist joins to transaction after find")
+    public void persist() {
+
+        testService.findParentAndChild(parentId);
+        testService.persist(new TestChild());
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
     }
 }

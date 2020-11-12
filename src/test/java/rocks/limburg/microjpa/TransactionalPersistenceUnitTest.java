@@ -27,12 +27,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class TestPersistenceUnitTest {
+public class TransactionalPersistenceUnitTest {
 
     private SeContainer cdiContainer;
     private ContextControl contextControl;
 
-    private TransactionalTestRelationService testService;
+    private TransactionalRelationService testService;
     private long parentId;
 
     @BeforeEach
@@ -41,7 +41,7 @@ public class TestPersistenceUnitTest {
         contextControl = cdiContainer.select(ContextControl.class).get();
 
         contextControl.startContext(RequestScoped.class);
-        testService = cdiContainer.select(TransactionalTestRelationService.class).get();
+        testService = cdiContainer.select(TransactionalRelationService.class).get();
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();

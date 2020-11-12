@@ -15,16 +15,14 @@
  */
 package rocks.limburg.microjpa;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-@ApplicationScoped
-public class ExtendedTestRelationService {
+public abstract class AbstractRelationService<P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
     @Inject
-    private ExtendedTestParentRepository parentRepository;
+    private P parentRepository;
     @Inject
-    private ExtendedTestChildRepository childRepository;
+    private C childRepository;
 
     public void persist(TestChild testChild) {
         childRepository.persist(testChild);

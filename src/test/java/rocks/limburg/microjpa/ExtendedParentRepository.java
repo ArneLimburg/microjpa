@@ -15,28 +15,20 @@
  */
 package rocks.limburg.microjpa;
 
+import static javax.persistence.PersistenceContextType.EXTENDED;
+
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 @ApplicationScoped
-public class TransactionalTestRelationService {
+public class ExtendedParentRepository extends AbstractParentRepository {
 
-    @Inject
-    private TransactionalTestParentRepository parentRepository;
-    @Inject
-    private TransactionalTestChildRepository childRepository;
-    @PersistenceContext(unitName = "test-unit")
+    @PersistenceContext(unitName = "test-unit", type = EXTENDED)
     private EntityManager entityManager;
 
-    public void persist(TestChild testChild) {
-        childRepository.persist(testChild);
-    }
-
-    public Relation findParentAndChild(long parentId) {
-        TestParent parent = parentRepository.find(parentId);
-        TestChild child = childRepository.findByParentId(parentId);
-        return new Relation(parent, child);
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
 }

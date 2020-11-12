@@ -23,7 +23,7 @@ import javax.transaction.Transactional;
 
 @Transactional
 @ApplicationScoped
-public class ManualTestChildRepository {
+public class ManualChildRepository extends AbstractChildRepository {
 
     @PersistenceUnit(unitName = "test-unit")
     private EntityManagerFactory entityManagerFactory;
@@ -43,5 +43,10 @@ public class ManualTestChildRepository {
                 .getSingleResult();
         entityManager.close();
         return foundChild;
+    }
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManagerFactory.createEntityManager();
     }
 }
