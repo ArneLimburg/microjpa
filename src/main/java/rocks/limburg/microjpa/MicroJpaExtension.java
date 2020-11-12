@@ -65,9 +65,9 @@ public class MicroJpaExtension implements Extension {
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
 
-    private Map<PersistenceUnitKey, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
-    private Set<PersistenceContextKey> persistenceContexts
-        = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextKey, Boolean>());
+    private Map<PersistenceUnitLiteral, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
+    private Set<PersistenceContextLiteral> persistenceContexts
+        = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextLiteral, Boolean>());
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.configureQualifier(PersistenceUnit.class)
@@ -80,7 +80,7 @@ public class MicroJpaExtension implements Extension {
         AnnotatedType<?> annotatedType = event.getAnnotatedType();
 
         Consumer<PersistenceUnit> initPersistenceProperties
-            = persistenceUnit -> persistenceProperties.computeIfAbsent(new PersistenceUnitKey(persistenceUnit), p -> new HashMap<>());
+            = persistenceUnit -> persistenceProperties.computeIfAbsent(new PersistenceUnitLiteral(persistenceUnit), p -> new HashMap<>());
         Consumer<PersistenceContext> addPersistenceContext = persistenceContext -> addPersistenceContext(persistenceContext);
 
         if (isPersistenceAnnotationPresent(annotatedType.getFields())) {
@@ -110,8 +110,8 @@ public class MicroJpaExtension implements Extension {
     }
 
     private void addPersistenceContext(PersistenceContext persistenceContext) {
-        persistenceContexts.add(new PersistenceContextKey(persistenceContext));
-        PersistenceUnitKey persistenceUnitKey = new PersistenceUnitKey(persistenceContext);
+        persistenceContexts.add(new PersistenceContextLiteral(persistenceContext));
+        PersistenceUnitLiteral persistenceUnitKey = new PersistenceUnitLiteral(persistenceContext);
         persistenceProperties.computeIfAbsent(persistenceUnitKey, p -> new HashMap<>())
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
@@ -122,17 +122,17 @@ public class MicroJpaExtension implements Extension {
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
                 .addType(EntityManagerFactory.class)
-                .addQualifiers(entry.getKey().toUnitAnnotation())
+                .addQualifiers(entry.getKey())
                 .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName, entry.getValue()))
                 .destroyWith((emf, c) -> emf.close()));
-        persistenceContexts.forEach(persistenceContextKey -> event
+        persistenceContexts.forEach(persistenceContext -> event
                 .<EntityManager>addBean()
                 .scope(RequestScoped.class)
                 .addType(EntityManager.class)
-                .addQualifiers(persistenceContextKey.toContextAnnotation())
+                .addQualifiers(persistenceContext)
                 .createWith(c -> {
                     EntityManager entityManager = CDI.current()
-                        .select(EntityManagerFactory.class, persistenceContextKey.toUnitAnnotation())
+                        .select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext))
                         .get()
                         .createEntityManager();
                     if (TransactionalInterceptor.isTransactionActive()) {
@@ -158,135 +158,69 @@ public class MicroJpaExtension implements Extension {
         return field.isAnnotationPresent(PersistenceContext.class) || field.isAnnotationPresent(PersistenceUnit.class);
     }
 
-    private static class PersistenceUnitKey {
+    private static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
 
         private String name;
         private String unitName;
 
-        PersistenceUnitKey(PersistenceUnit unit) {
+        PersistenceUnitLiteral(PersistenceUnit unit) {
             name = unit.name();
             unitName = unit.unitName();
         }
 
-        PersistenceUnitKey(PersistenceContext context) {
+        PersistenceUnitLiteral(PersistenceContext context) {
             name = context.name();
             unitName = context.unitName();
         }
 
-        public PersistenceUnit toUnitAnnotation() {
-            return new PersistenceUnitLiteral() {
-
-                @Override
-                public String name() {
-                    return name;
-                }
-
-                @Override
-                public String unitName() {
-                    return unitName;
-                }
-            };
+        @Override
+        public String name() {
+            return name;
         }
 
         @Override
-        public int hashCode() {
-            return name.hashCode() ^ unitName.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (other == null || other.getClass() != getClass()) {
-                return false;
-            }
-            PersistenceUnitKey otherKey = (PersistenceUnitKey)other;
-            return name.equals(otherKey.name) && unitName.equals(otherKey.unitName);
+        public String unitName() {
+            return unitName;
         }
     }
 
-    private static class PersistenceContextKey {
+    private static class PersistenceContextLiteral extends AnnotationLiteral<PersistenceContext> implements PersistenceContext {
 
         private String name;
         private String unitName;
         private PersistenceContextType type;
         private SynchronizationType synchronization;
 
-        PersistenceContextKey(PersistenceContext context) {
+        PersistenceContextLiteral(PersistenceContext context) {
             name = context.name();
             unitName = context.unitName();
             type = context.type();
             synchronization = context.synchronization();
         }
 
-        public PersistenceUnit toUnitAnnotation() {
-            return new PersistenceUnitLiteral() {
-
-                @Override
-                public String name() {
-                    return name;
-                }
-
-                @Override
-                public String unitName() {
-                    return unitName;
-                }
-            };
-        }
-
-        public PersistenceContext toContextAnnotation() {
-            return new PersistenceContextLiteral() {
-
-                @Override
-                public String name() {
-                    return name;
-                }
-
-                @Override
-                public String unitName() {
-                    return unitName;
-                }
-
-                @Override
-                public PersistenceContextType type() {
-                    return type;
-                }
-
-                @Override
-                public SynchronizationType synchronization() {
-                    return synchronization;
-                }
-
-                @Override
-                public PersistenceProperty[] properties() {
-                    return EMPTY_PERSISTENCE_PROPERTIES;
-                }
-            };
+        @Override
+        public String name() {
+            return name;
         }
 
         @Override
-        public int hashCode() {
-            return name.hashCode() ^ unitName.hashCode() ^ type.hashCode() ^ synchronization.hashCode();
+        public String unitName() {
+            return unitName;
         }
 
         @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (other == null || other.getClass() != getClass()) {
-                return false;
-            }
-            PersistenceContextKey otherKey = (PersistenceContextKey)other;
-            return name.equals(otherKey.name) && unitName.equals(otherKey.unitName)
-                && type.equals(otherKey.type) && synchronization.equals(otherKey.synchronization);
+        public PersistenceContextType type() {
+            return type;
         }
-    }
 
-    private abstract static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
-    }
+        @Override
+        public SynchronizationType synchronization() {
+            return synchronization;
+        }
 
-    private abstract static class PersistenceContextLiteral extends AnnotationLiteral<PersistenceContext> implements PersistenceContext {
+        @Override
+        public PersistenceProperty[] properties() {
+            return EMPTY_PERSISTENCE_PROPERTIES;
+        }
     }
 }
