@@ -31,7 +31,7 @@ jobs:
         run: mvn clean package
       - name: Test with Weld
         run: mvn clean package -Pweld
-      - name: build and verify
+      - name: Build and Verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

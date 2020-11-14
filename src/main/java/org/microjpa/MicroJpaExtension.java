@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
@@ -37,7 +36,6 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
@@ -79,34 +77,34 @@ public class MicroJpaExtension implements Extension {
     public void configurePersistenceAnnotations(@Observes ProcessAnnotatedType<?> event) {
         AnnotatedType<?> annotatedType = event.getAnnotatedType();
 
-        Consumer<PersistenceUnit> initPersistenceProperties
-            = persistenceUnit -> persistenceProperties.computeIfAbsent(new PersistenceUnitLiteral(persistenceUnit), p -> new HashMap<>());
-        Consumer<PersistenceContext> addPersistenceContext = persistenceContext -> addPersistenceContext(persistenceContext);
-
         if (isPersistenceAnnotationPresent(annotatedType.getFields())) {
             AnnotatedTypeConfigurator<?> typeConfigurator = event.configureAnnotatedType();
             typeConfigurator.fields().stream()
                 .filter(configurer -> isPersistenceAnnotationPresent(configurer.getAnnotated()))
                 .forEach(configurer -> {
                     configurer.add(new AnnotationLiteral<Inject>() { });
-                    ofNullable(configurer.getAnnotated().getAnnotation(PersistenceUnit.class)).ifPresent(initPersistenceProperties);
-                    ofNullable(configurer.getAnnotated().getAnnotation(PersistenceContext.class)).ifPresent(addPersistenceContext);
+                    ofNullable(configurer.getAnnotated().getAnnotation(PersistenceUnit.class)).ifPresent(this::initPersistenceProperties);
+                    ofNullable(configurer.getAnnotated().getAnnotation(PersistenceContext.class)).ifPresent(this::addPersistenceContext);
                 });
         }
         annotatedType.getMethods().stream()
             .map(method -> ofNullable(method.getAnnotation(PersistenceUnit.class)))
             .filter(Optional::isPresent).map(Optional::get)
-            .forEach(initPersistenceProperties);
+            .forEach(this::initPersistenceProperties);
         annotatedType.getMethods().stream()
             .map(method -> ofNullable(method.getAnnotation(PersistenceContext.class)))
             .filter(Optional::isPresent).map(Optional::get)
             .forEach(persistenceContext -> addPersistenceContext(persistenceContext));
-        ofNullable(annotatedType.getAnnotation(PersistenceUnit.class)).ifPresent(initPersistenceProperties);
-        ofNullable(annotatedType.getAnnotation(PersistenceContext.class)).ifPresent(addPersistenceContext);
+        ofNullable(annotatedType.getAnnotation(PersistenceUnit.class)).ifPresent(this::initPersistenceProperties);
+        ofNullable(annotatedType.getAnnotation(PersistenceContext.class)).ifPresent(this::addPersistenceContext);
         ofNullable(annotatedType.getAnnotation(PersistenceUnits.class))
-            .ifPresent(units -> stream(units.value()).forEach(initPersistenceProperties));
+            .ifPresent(units -> stream(units.value()).forEach(this::initPersistenceProperties));
         ofNullable(annotatedType.getAnnotation(PersistenceContexts.class))
-            .ifPresent(contexts -> stream(contexts.value()).forEach(addPersistenceContext));
+            .ifPresent(contexts -> stream(contexts.value()).forEach(this::addPersistenceContext));
+    }
+
+    private void initPersistenceProperties(PersistenceUnit persistenceUnit) {
+        persistenceProperties.computeIfAbsent(new PersistenceUnitLiteral(persistenceUnit), p -> new HashMap<>());
     }
 
     private void addPersistenceContext(PersistenceContext persistenceContext) {
@@ -116,8 +114,8 @@ public class MicroJpaExtension implements Extension {
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
 
-    public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
-        persistenceProperties.values().forEach(properties -> overrideProperties(properties));
+    public void addBeans(@Observes AfterBeanDiscovery event) {
+        persistenceProperties.values().forEach(this::overrideProperties);
         persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
@@ -151,7 +149,7 @@ public class MicroJpaExtension implements Extension {
     }
 
     private <F extends AnnotatedField<?>> boolean isPersistenceAnnotationPresent(Set<F> fields) {
-        return fields.stream().filter(this::isPersistenceAnnotationPresent).findAny().isPresent();
+        return fields.stream().anyMatch(this::isPersistenceAnnotationPresent);
     }
 
     private <F extends AnnotatedField<?>> boolean isPersistenceAnnotationPresent(F field) {

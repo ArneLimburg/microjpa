@@ -36,7 +36,7 @@ import org.microjpa.parent.TestParent;
 import org.microjpa.relation.AbstractRelationService;
 import org.microjpa.relation.Relation;
 
-public abstract class AbstractPersistenceUnitTest
+abstract class AbstractPersistenceUnitTest
     <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
     private SeContainer cdiContainer;
@@ -70,7 +70,7 @@ public abstract class AbstractPersistenceUnitTest
 
     @Test
     @DisplayName("found parent equals parent of found child (same EntityManager is used)")
-    public void find() {
+    void find() {
 
         Relation parentAndChild = testService.findParentAndChild(parentId);
 
@@ -79,7 +79,7 @@ public abstract class AbstractPersistenceUnitTest
 
     @Test
     @DisplayName("persist joins to transaction after find")
-    public void persist() {
+    void persist() {
 
         testService.findParentAndChild(parentId);
         testService.persist(new TestChild());

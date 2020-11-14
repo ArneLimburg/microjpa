@@ -30,20 +30,22 @@ public class ExceptionHandlingTest
 
     @Test
     @DisplayName("persist rolls back on exception")
-    public void rollbackOnPersist() {
+    void rollbackOnPersist() {
 
         testService.findParentAndChild(parentId);
-        assertThrows(IllegalStateException.class, () -> testService.persistWithException(new TestChild()));
+        TestChild newChild = new TestChild();
+        assertThrows(IllegalStateException.class, () -> testService.persistWithException(newChild));
         testChildRepository.clear();
         assertEquals(1, testChildRepository.findAll().size());
     }
 
     @Test
     @DisplayName("persist rolls back on nested exception")
-    public void nestedRollbackOnPersist() {
+    void nestedRollbackOnPersist() {
 
         testService.findParentAndChild(parentId);
-        assertThrows(IllegalStateException.class, () -> testService.persistWithNestedException(new TestChild()));
+        TestChild newChild = new TestChild();
+        assertThrows(IllegalStateException.class, () -> testService.persistWithNestedException(newChild));
         testChildRepository.clear();
         assertEquals(1, testChildRepository.findAll().size());
     }
