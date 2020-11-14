@@ -6,11 +6,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>rocks.limburg.microjpa</groupId>
+  <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
   <version>0.9.5-SNAPSHOT</version>
 
-  <name>microjpa</name>
+  <name>MicroJPA</name>
   <url>http://microjpa.limburg.rocks</url>
   <description>
     A framework to support resource local EntityManagers for injection into
