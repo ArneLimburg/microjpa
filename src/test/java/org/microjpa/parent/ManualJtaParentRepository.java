@@ -13,36 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.parent;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
-import javax.transaction.Transactional;
 
-@Transactional
 @ApplicationScoped
-public class ManualJtaChildRepository extends AbstractChildRepository {
+public class ManualJtaParentRepository extends AbstractParentRepository {
 
     @PersistenceUnit(unitName = "jta-unit")
     private EntityManagerFactory entityManagerFactory;
 
-    public void persist(TestChild testChild) {
+    public TestParent find(long id) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        entityManager.persist(testChild);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-    }
-
-    public TestChild findByParentId(long parentId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        TestChild foundChild = entityManager.createNamedQuery(TestChild.FIND_BY_PARENT_ID, TestChild.class)
-                .setParameter("parentId", parentId)
-                .getSingleResult();
-        entityManager.close();
-        return foundChild;
+        try {
+            return entityManager.find(TestParent.class, id);
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override

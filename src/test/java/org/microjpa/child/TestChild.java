@@ -13,20 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.child;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
+
+import org.microjpa.parent.TestParent;
 
 @Entity
-public class TestParent {
+@NamedQuery(name = TestChild.FIND_BY_PARENT_ID, query = "SELECT c FROM TestChild c WHERE c.parent.id = :parentId")
+public class TestChild {
 
+    public static final String FIND_BY_PARENT_ID = "TestChild.findByParentId";
     @Id
     @GeneratedValue
     private long id;
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private TestParent parent;
 
-    public long getId() {
-        return id;
+    public TestChild() {
+    }
+
+    public TestChild(TestParent parent) {
+        this.parent = parent;
+    }
+
+    public TestParent getParent() {
+        return parent;
     }
 }

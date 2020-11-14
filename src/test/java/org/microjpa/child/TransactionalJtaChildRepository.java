@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.child;
 
-import javax.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
-public abstract class AbstractRelationService<P extends AbstractParentRepository, C extends AbstractChildRepository> {
+@Transactional
+@ApplicationScoped
+public class TransactionalJtaChildRepository extends AbstractChildRepository {
 
-    @Inject
-    private P parentRepository;
-    @Inject
-    private C childRepository;
+    @PersistenceContext(unitName = "jta-unit")
+    private EntityManager entityManager;
 
-    public void persist(TestChild testChild) {
-        childRepository.persist(testChild);
-    }
-
-    public Relation findParentAndChild(long parentId) {
-        TestParent parent = parentRepository.find(parentId);
-        TestChild child = childRepository.findByParentId(parentId);
-        return new Relation(parent, child);
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
 }

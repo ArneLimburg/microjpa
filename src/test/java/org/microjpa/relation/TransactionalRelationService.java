@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
-
-import static javax.persistence.PersistenceContextType.EXTENDED;
+package org.microjpa.relation;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
+import org.microjpa.child.TransactionalChildRepository;
+import org.microjpa.parent.TransactionalParentRepository;
+
+@Transactional
 @ApplicationScoped
-public class ExtendedChildRepository extends AbstractChildRepository {
-
-    @PersistenceContext(unitName = "test-unit", type = EXTENDED)
-    private EntityManager entityManager;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
-    }
+public class TransactionalRelationService
+    extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
 }

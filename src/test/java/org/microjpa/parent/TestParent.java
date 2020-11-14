@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.parent;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-@ApplicationScoped
-public class ManualJtaRelationService extends AbstractRelationService<ManualJtaParentRepository, ManualJtaChildRepository> {
+@Entity
+public class TestParent {
+
+    @Id
+    @GeneratedValue
+    private long id;
+
+    public long getId() {
+        return id;
+    }
 }

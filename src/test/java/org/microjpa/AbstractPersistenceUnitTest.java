@@ -29,6 +29,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.microjpa.child.AbstractChildRepository;
+import org.microjpa.child.TestChild;
+import org.microjpa.parent.AbstractParentRepository;
+import org.microjpa.parent.TestParent;
+import org.microjpa.relation.AbstractRelationService;
+import org.microjpa.relation.Relation;
 
 public abstract class AbstractPersistenceUnitTest
     <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {

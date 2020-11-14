@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.relation;
 
 import javax.enterprise.context.ApplicationScoped;
+
+import org.microjpa.child.ExtendedChildRepository;
+import org.microjpa.parent.ExtendedParentRepository;
 
 @ApplicationScoped
 public class ExtendedRelationService extends AbstractRelationService<ExtendedParentRepository, ExtendedChildRepository> {

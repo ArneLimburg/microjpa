@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.child;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
-public abstract class AbstractParentRepository {
+@Transactional
+@ApplicationScoped
+public class TransactionalChildRepository extends AbstractChildRepository {
 
-    public TestParent find(long id) {
-        return getEntityManager().find(TestParent.class, id);
+    @PersistenceContext(unitName = "test-unit")
+    private EntityManager entityManager;
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
     }
-
-    protected abstract EntityManager getEntityManager();
 }

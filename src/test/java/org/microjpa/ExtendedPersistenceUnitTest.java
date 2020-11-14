@@ -15,6 +15,10 @@
  */
 package org.microjpa;
 
+import org.microjpa.child.ExtendedChildRepository;
+import org.microjpa.parent.ExtendedParentRepository;
+import org.microjpa.relation.ExtendedRelationService;
+
 public class ExtendedPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
 }

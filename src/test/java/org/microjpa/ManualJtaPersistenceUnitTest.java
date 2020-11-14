@@ -25,6 +25,10 @@ import javax.persistence.PersistenceUnits;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.microjpa.child.ManualJtaChildRepository;
+import org.microjpa.parent.ManualJtaParentRepository;
+import org.microjpa.relation.ManualJtaRelationService;
+import org.microjpa.relation.Relation;
 
 @PersistenceUnit(unitName = "jta-unit")
 @PersistenceUnits(@PersistenceUnit(unitName = "jta-unit"))

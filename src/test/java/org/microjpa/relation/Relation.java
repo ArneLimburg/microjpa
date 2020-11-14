@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.relation;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
+import org.microjpa.child.TestChild;
+import org.microjpa.parent.TestParent;
 
-@Transactional
-@ApplicationScoped
-public class TransactionalJtaParentRepository extends AbstractParentRepository {
+public class Relation {
 
-    @PersistenceContext(unitName = "jta-unit")
-    private EntityManager entityManager;
+    private TestParent parent;
+    private TestChild child;
 
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
+    public Relation(TestParent parent, TestChild child) {
+        this.parent = parent;
+        this.child = child;
     }
+
+    public TestParent getParent() {
+        return parent;
+    }
+
+    public TestChild getChild() {
+        return child;
+    }
+
 }
