@@ -13,32 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.child;
+package org.microjpa.relation;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+
+import org.microjpa.child.TransactionalChildRepository;
+import org.microjpa.parent.TransactionalParentRepository;
 
 @Transactional
 @ApplicationScoped
-public class TransactionalChildRepository extends AbstractChildRepository {
-
-    @PersistenceContext(unitName = "test-unit")
-    private EntityManager entityManager;
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
-    }
-
-    public void flush() {
-        entityManager.flush();
-    }
-
-    public void persistWithException(TestChild testChild) {
-        entityManager.persist(testChild);
-        entityManager.flush();
-        throw new IllegalStateException("persit failed");
-    }
+public class ExceptionRelationService
+    extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
 }

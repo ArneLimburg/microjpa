@@ -25,9 +25,9 @@ import org.microjpa.parent.TestParent;
 public abstract class AbstractRelationService<P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
     @Inject
-    private P parentRepository;
+    P parentRepository;
     @Inject
-    private C childRepository;
+    C childRepository;
 
     public void persist(TestChild testChild) {
         childRepository.persist(testChild);

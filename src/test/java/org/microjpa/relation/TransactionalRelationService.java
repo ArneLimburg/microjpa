@@ -18,6 +18,7 @@ package org.microjpa.relation;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
+import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;
 import org.microjpa.parent.TransactionalParentRepository;
 
@@ -25,4 +26,14 @@ import org.microjpa.parent.TransactionalParentRepository;
 @ApplicationScoped
 public class TransactionalRelationService
     extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
+
+    public void persistWithException(TestChild testChild) {
+        childRepository.persist(testChild);
+        childRepository.flush();
+        throw new IllegalStateException("persist failed");
+    }
+
+    public void persistWithNestedException(TestChild testChild) {
+        childRepository.persistWithException(testChild);
+    }
 }

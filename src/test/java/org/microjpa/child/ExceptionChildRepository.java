@@ -15,14 +15,10 @@
  */
 package org.microjpa.child;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 
-@Transactional
-@ApplicationScoped
-public class TransactionalChildRepository extends AbstractChildRepository {
+public class ExceptionChildRepository extends AbstractChildRepository {
 
     @PersistenceContext(unitName = "test-unit")
     private EntityManager entityManager;
@@ -30,15 +26,5 @@ public class TransactionalChildRepository extends AbstractChildRepository {
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
-    }
-
-    public void flush() {
-        entityManager.flush();
-    }
-
-    public void persistWithException(TestChild testChild) {
-        entityManager.persist(testChild);
-        entityManager.flush();
-        throw new IllegalStateException("persit failed");
     }
 }
