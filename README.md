@@ -27,6 +27,13 @@ $ mvn verify -Popenwebbeans
 $ mvn verify -Pweld
 ```
 
+To avoid issues with the maven-gpg-plugin, you can use `package` instead:
+
+```
+$ mvn package -Popenwebbeans
+$ mvn package -Pweld
+```
+
 #### Via Docker
 
 To run the tests using Docker build the containers and run them:

@@ -5,4 +5,4 @@ WORKDIR /workdir
 COPY pom.xml .
 COPY src .
 
-CMD [ "mvn", "verify", "-Pweld" ]
+CMD [ "mvn", "package", "-Pweld" ]
