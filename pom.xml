@@ -310,7 +310,7 @@
   </build>
   <profiles>
     <profile>
-      <id>openwebbeans</id>
+      <id>owb</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
