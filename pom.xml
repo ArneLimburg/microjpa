@@ -11,7 +11,7 @@
   <version>0.9.6-SNAPSHOT</version>
 
   <name>MicroJPA</name>
-  <url>http://microjpa.limburg.rocks</url>
+  <url>http://www.microjpa.org</url>
   <description>
     A framework to support resource local EntityManagers for injection into
     @PersistenceContext injection points.
@@ -25,9 +25,9 @@
   </licenses>
   
   <scm>
-    <url>http://www.microjpa.org</url>
+    <url>https://github.com/ArneLimburg/microjpa</url>
     <connection>scm:git:git://github.com/ArneLimburg/microjpa.git</connection>
-    <developerConnection>scm:git:ssh://github.com:ArneLimburg/microjpa.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/ArneLimburg/microjpa.git</developerConnection>
   </scm>
 
   <developers>
