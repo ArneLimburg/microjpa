@@ -129,17 +129,29 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <excludedGroups>multiple-persistence-units</excludedGroups>
+              <groups>application-exception,multiple-persistence-units</groups>
             </configuration>
           </execution>
           <execution>
-            <id>multiple-persistence-units</id>
+            <id>without-application-exception</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>jakarta.ejb:jakarta.ejb-api</classpathDependencyExclude>
+              </classpathDependencyExcludes>
+              <groups>multiple-persistence-units</groups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>single-persistence-unit</id>
             <phase>test</phase>
             <goals>
               <goal>test</goal>
             </goals>
             <configuration>
-              <groups>multiple-persistence-units</groups>
+              <groups>single-persistence-unit</groups>
             </configuration>
           </execution>
         </executions>
@@ -287,7 +299,7 @@
                     <limit>
                       <counter>METHOD</counter>
                       <value>COVEREDRATIO</value>
-                      <minimum>0.95</minimum>
+                      <minimum>1.00</minimum>
                     </limit>
                     <limit>
                       <counter>CLASS</counter>

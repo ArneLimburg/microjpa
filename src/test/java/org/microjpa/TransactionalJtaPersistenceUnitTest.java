@@ -22,7 +22,9 @@ import javax.persistence.PersistenceProperty;
 import org.microjpa.child.TransactionalJtaChildRepository;
 import org.microjpa.parent.TransactionalJtaParentRepository;
 import org.microjpa.relation.TransactionalJtaRelationService;
+import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
+@MultiplePersistenceUnitsTest
 @PersistenceContexts(@PersistenceContext(unitName = "jta-unit", properties
     = {
         @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),

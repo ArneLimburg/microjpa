@@ -15,6 +15,7 @@
  */
 package org.microjpa;
 
+import static java.util.Optional.ofNullable;
 import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
 import static javax.transaction.Transactional.TxType.REQUIRED;
 
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Priority;
+import javax.ejb.ApplicationException;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.inject.Any;
@@ -43,6 +45,17 @@ import javax.transaction.Transactional;
 @Interceptor
 @Priority(LIBRARY_AFTER)
 public class TransactionalInterceptor {
+
+    private static final boolean APPLICATION_EXCEPTION_AVAILABLE;
+    static {
+        boolean applicationExceptionAvailable = true;
+        try {
+            Class.forName("javax.ejb.ApplicationException");
+        } catch (ClassNotFoundException e) {
+            applicationExceptionAvailable = false;
+        }
+        APPLICATION_EXCEPTION_AVAILABLE = applicationExceptionAvailable;
+    }
 
     @Inject
     private BeanManager beanManager;
@@ -63,7 +76,7 @@ public class TransactionalInterceptor {
         try {
             return context.proceed();
         } catch (Exception e) {
-            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+            checkRollback(e);
             throw e;
         } finally {
             if (beginInThisMethod) {
@@ -92,5 +105,53 @@ public class TransactionalInterceptor {
             Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
         });
         return entityManagers;
+    }
+
+    private void checkRollback(Exception e) {
+        if (APPLICATION_EXCEPTION_AVAILABLE) {
+            new ApplicationExceptionRollbackPolicy(getActiveEntityManagers()).checkRollback(e);
+        } else {
+            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+        }
+    }
+
+    private static class ApplicationExceptionRollbackPolicy {
+
+        private List<EntityManager> entityManagers;
+
+        ApplicationExceptionRollbackPolicy(List<EntityManager> activeEntityManagers) {
+            entityManagers = activeEntityManagers;
+        }
+
+        public void checkRollback(Exception e) {
+            Optional<ApplicationException> annotation = ofNullable(e.getClass().getAnnotation(ApplicationException.class));
+            if (annotation.isPresent()) {
+                if (annotation.get().rollback()) {
+                    setRollbackOnly();
+                }
+            } else {
+                checkInheritedRollback(e.getClass().getSuperclass());
+            }
+        }
+
+        private void checkInheritedRollback(Class<?> exceptionType) {
+            if (Exception.class.equals(exceptionType)) {
+                setRollbackOnly();
+                return;
+            }
+            Optional<ApplicationException> annotation = ofNullable(exceptionType.getAnnotation(ApplicationException.class));
+            if (annotation.isPresent()) {
+                ApplicationException applicationExceptionAnnotation = annotation.get();
+                if (applicationExceptionAnnotation.inherited() && applicationExceptionAnnotation.rollback()) {
+                    setRollbackOnly();
+                }
+            } else {
+                checkInheritedRollback(exceptionType.getSuperclass());
+            }
+        }
+
+        private void setRollbackOnly() {
+            entityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+        }
     }
 }

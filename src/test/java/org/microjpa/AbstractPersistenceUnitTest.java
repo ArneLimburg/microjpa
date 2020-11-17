@@ -23,6 +23,7 @@ import java.lang.reflect.ParameterizedType;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.persistence.PersistenceUnit;
 
 import org.apache.deltaspike.cdise.api.ContextControl;
 import org.junit.jupiter.api.AfterEach;
@@ -36,6 +37,7 @@ import org.microjpa.parent.TestParent;
 import org.microjpa.relation.AbstractRelationService;
 import org.microjpa.relation.Relation;
 
+@PersistenceUnit(unitName = "unknown")
 abstract class AbstractPersistenceUnitTest
     <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {
 

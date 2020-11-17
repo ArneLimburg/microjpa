@@ -29,8 +29,9 @@ import org.microjpa.child.ManualJtaChildRepository;
 import org.microjpa.parent.ManualJtaParentRepository;
 import org.microjpa.relation.ManualJtaRelationService;
 import org.microjpa.relation.Relation;
+import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
-@PersistenceUnit(unitName = "jta-unit")
+@MultiplePersistenceUnitsTest
 @PersistenceUnits(@PersistenceUnit(unitName = "jta-unit"))
 public class ManualJtaPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualJtaRelationService, ManualJtaParentRepository, ManualJtaChildRepository> {

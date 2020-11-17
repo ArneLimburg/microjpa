@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.exception;
 
-import org.microjpa.child.ExtendedChildRepository;
-import org.microjpa.parent.ExtendedParentRepository;
-import org.microjpa.relation.ExtendedRelationService;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
+import javax.ejb.ApplicationException;
 
-@MultiplePersistenceUnitsTest
-public class ExtendedPersistenceUnitTest
-    extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
+@ApplicationException(rollback = true, inherited = false)
+public class RollbackApplicationException extends RuntimeException {
+
 }

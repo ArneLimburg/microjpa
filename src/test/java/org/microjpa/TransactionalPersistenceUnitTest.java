@@ -18,7 +18,9 @@ package org.microjpa;
 import org.microjpa.child.TransactionalChildRepository;
 import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService;
+import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
+@MultiplePersistenceUnitsTest
 public class TransactionalPersistenceUnitTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 }

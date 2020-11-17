@@ -33,7 +33,39 @@ public class TransactionalRelationService
         throw new IllegalStateException("persist failed");
     }
 
-    public void persistWithNestedException(TestChild testChild) {
-        childRepository.persistWithException(testChild);
+    public void persistWithNestedRuntimeException(TestChild testChild) {
+        childRepository.persistWithRuntimeException(testChild);
+    }
+
+    public void persistWithNoRollbackApplicationException(TestChild testChild) {
+        childRepository.persistWithNoRollbackApplicationException(testChild);
+    }
+
+    public void persistWithRollbackApplicationException(TestChild testChild) {
+        childRepository.persistWithRollbackApplicationException(testChild);
+    }
+
+    public void persistWithNoRollbackApplicationExceptionSubclass(TestChild testChild) {
+        childRepository.persistWithNoRollbackApplicationExceptionSubclass(testChild);
+    }
+
+    public void persistWithRollbackApplicationExceptionSubclass(TestChild testChild) {
+        childRepository.persistWithRollbackApplicationExceptionSubclass(testChild);
+    }
+
+    public void persistWithInheritingNoRollbackApplicationException(TestChild testChild) {
+        childRepository.persistWithInheritingNoRollbackApplicationException(testChild);
+    }
+
+    public void persistWithInheritingRollbackApplicationException(TestChild testChild) {
+        childRepository.persistWithInheritingRollbackApplicationException(testChild);
+    }
+
+    public void persistWithInheritingNoRollbackApplicationExceptionSubclass(TestChild testChild) {
+        childRepository.persistWithInheritingNoRollbackApplicationExceptionSubclass(testChild);
+    }
+
+    public void persistWithInheritingRollbackApplicationExceptionSubclass(TestChild testChild) {
+        childRepository.persistWithInheritingRollbackApplicationExceptionSubclass(testChild);
     }
 }

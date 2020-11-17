@@ -22,9 +22,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;
+import org.microjpa.exception.InheritingRollbackApplicationException;
+import org.microjpa.exception.InheritingRollbackApplicationExceptionSubclass;
 import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService;
+import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
+@MultiplePersistenceUnitsTest
 public class ExceptionHandlingTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 
@@ -45,7 +49,33 @@ public class ExceptionHandlingTest
 
         testService.findParentAndChild(parentId);
         TestChild newChild = new TestChild();
-        assertThrows(IllegalStateException.class, () -> testService.persistWithNestedException(newChild));
+        assertThrows(IllegalStateException.class, () -> testService.persistWithNestedRuntimeException(newChild));
+        testChildRepository.clear();
+        assertEquals(1, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist rolls back when it throws exception annotated with @ApplicationException(rollback = true, inherited = true)")
+    void nestedRollbackOnPersistWithInheritingApplicationException() {
+
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(InheritingRollbackApplicationException.class,
+            () -> testService.persistWithInheritingRollbackApplicationException(newChild));
+        testChildRepository.clear();
+        assertEquals(1, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist rolls back when it throws exception "
+        + "with superclass annotated with @ApplicationException(rollback = true, inherited = true)")
+    void nestedRollbackOnPersistWithInheritingApplicationExceptionSuperclass() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(InheritingRollbackApplicationExceptionSubclass.class,
+            () -> testService.persistWithInheritingRollbackApplicationExceptionSubclass(newChild));
         testChildRepository.clear();
         assertEquals(1, testChildRepository.findAll().size());
     }

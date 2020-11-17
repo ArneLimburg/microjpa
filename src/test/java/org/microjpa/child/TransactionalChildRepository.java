@@ -20,6 +20,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import org.microjpa.exception.InheritingNoRollbackApplicationException;
+import org.microjpa.exception.InheritingNoRollbackApplicationExceptionSubclass;
+import org.microjpa.exception.InheritingRollbackApplicationException;
+import org.microjpa.exception.InheritingRollbackApplicationExceptionSubclass;
+import org.microjpa.exception.NoRollbackApplicationException;
+import org.microjpa.exception.NoRollbackApplicationExceptionSubclass;
+import org.microjpa.exception.RollbackApplicationException;
+import org.microjpa.exception.RollbackApplicationExceptionSubclass;
+
 @Transactional
 @ApplicationScoped
 public class TransactionalChildRepository extends AbstractChildRepository {
@@ -36,9 +45,57 @@ public class TransactionalChildRepository extends AbstractChildRepository {
         entityManager.flush();
     }
 
-    public void persistWithException(TestChild testChild) {
+    public void persistWithRuntimeException(TestChild testChild) {
         entityManager.persist(testChild);
         entityManager.flush();
         throw new IllegalStateException("persit failed");
+    }
+
+    public void persistWithNoRollbackApplicationException(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new NoRollbackApplicationException();
+    }
+
+    public void persistWithRollbackApplicationException(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new RollbackApplicationException();
+    }
+
+    public void persistWithNoRollbackApplicationExceptionSubclass(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new NoRollbackApplicationExceptionSubclass();
+    }
+
+    public void persistWithRollbackApplicationExceptionSubclass(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new RollbackApplicationExceptionSubclass();
+    }
+
+    public void persistWithInheritingNoRollbackApplicationException(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new InheritingNoRollbackApplicationException();
+    }
+
+    public void persistWithInheritingRollbackApplicationException(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new InheritingRollbackApplicationException();
+    }
+
+    public void persistWithInheritingNoRollbackApplicationExceptionSubclass(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new InheritingNoRollbackApplicationExceptionSubclass();
+    }
+
+    public void persistWithInheritingRollbackApplicationExceptionSubclass(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new InheritingRollbackApplicationExceptionSubclass();
     }
 }

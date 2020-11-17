@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.tags;
 
-import org.microjpa.child.ExtendedChildRepository;
-import org.microjpa.parent.ExtendedParentRepository;
-import org.microjpa.relation.ExtendedRelationService;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
 
-@MultiplePersistenceUnitsTest
-public class ExtendedPersistenceUnitTest
-    extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.junit.jupiter.api.Tag;
+
+@Tag("single-persistence-unit")
+@Target({ANNOTATION_TYPE, TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SinglePersistenceUnitTest {
 }
