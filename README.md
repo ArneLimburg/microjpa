@@ -25,30 +25,6 @@ or when using Gradle the following line needs to be added to the dependencies bl
 implementation 'org.microjpa:microjpa:0.9.5'
 ```
 
-The version listed here may not always be up-to-date. It can be checked on [Maven Central](https://search.maven.org/artifact/org.microjpa/microjpa).
+# Further information
 
-## Build
-
-### Requirements
-
-In order to use requirements are necessary:
- * JDK 8 or newer
- * Maven 3 or newer
-
-### Build and install locally
-
-Check out the repository and run
-
-```bash
-$ git clone git@github.com:ArneLimburg/microjpa.git
-$ cd microjpa
-$ mvn verify
-``` 
-
-This uses openwebbeans by default. WELD can be used by passing `-Pweld` to the `mvn` calls.
-
-After all test run successfully, _MicroJPA_ can be installed into the local Maven repository via:
-
-```bash
-$ mvn install
-```
+* Build information: [BUILD.md](BUILD.md)
