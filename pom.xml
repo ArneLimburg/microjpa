@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>0.9.6-SNAPSHOT</version>
+  <version>0.9.6</version>
 
   <name>MicroJPA</name>
   <url>http://www.microjpa.org</url>
@@ -28,6 +25,7 @@
     <url>https://github.com/ArneLimburg/microjpa</url>
     <connection>scm:git:git://github.com/ArneLimburg/microjpa.git</connection>
     <developerConnection>scm:git:https://github.com/ArneLimburg/microjpa.git</developerConnection>
+    <tag>0.9.6</tag>
   </scm>
 
   <developers>
