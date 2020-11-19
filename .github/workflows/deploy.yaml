@@ -15,6 +15,10 @@ jobs:
     steps:
       - id: checkout
         uses: actions/checkout@v2
+      - id: setup-git
+        run: |
+          git config user.name arne
+          git config user.email arne@apache.org
       - id: install-key
         name: Install gpg secret key
         run: |
@@ -44,13 +48,21 @@ jobs:
       - id: weld-test
         name: Test with Weld
         run: mvn clean package -Pweld
-      - id: maven-deploy
-        name: Test with OpenWebBeans and Deploy with Maven
-        run: mvn -Powb,release -Dgpg.passphrase=$GPG_PASSPHRASE clean verify jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar deploy
+      - id: owb-test
+        name: Test with OpenWebBeans
+        run: mvn clean package jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
+      - id: maven-release
+        name: Release
+        run: |
+          mvn -B release:prepare
+          mvn release:perform -DreleaseProfiles=owb,release -Darguments=-Dgpg.passphrase=$GPG_PASSPHRASE
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           
