@@ -59,19 +59,15 @@ public class TransactionalInterceptor {
 
     @Inject
     private BeanManager beanManager;
-
-    private static ThreadLocal<Boolean> transactionActive = new ThreadLocal<>();
-
-    public static boolean isTransactionActive() {
-        return Optional.ofNullable(transactionActive.get()).orElse(Boolean.FALSE);
-    }
+    @Inject
+    private TransactionContext transactionContext;
 
     @AroundInvoke
     public Object transactional(InvocationContext context) throws Exception {
-        boolean beginInThisMethod = !isTransactionActive();
+        boolean beginInThisMethod = !transactionContext.isActive();
         if (beginInThisMethod) {
+            transactionContext.activate();
             getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
-            transactionActive.set(Boolean.TRUE);
         }
         try {
             return context.proceed();
@@ -80,8 +76,8 @@ public class TransactionalInterceptor {
             throw e;
         } finally {
             if (beginInThisMethod) {
-                transactionActive.remove();
                 getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(completeTransaction());
+                transactionContext.deactivate();
             }
         }
     }

@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.relation;
+package org.microjpa.tags;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
 
-import org.microjpa.child.TransactionalJtaChildRepository;
-import org.microjpa.parent.TransactionalJtaParentRepository;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Transactional
-@ApplicationScoped
-public class TransactionalJtaRelationService
-    extends AbstractRelationService<TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
+import org.junit.jupiter.api.Tag;
+
+@Tag("simple-unit-test")
+@Target({ANNOTATION_TYPE, TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UnitTest {
 }

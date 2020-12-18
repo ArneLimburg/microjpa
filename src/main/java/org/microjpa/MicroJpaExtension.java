@@ -20,6 +20,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
+import static javax.persistence.PersistenceContextType.TRANSACTION;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -54,6 +55,7 @@ import javax.persistence.PersistenceProperty;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnits;
 import javax.persistence.SynchronizationType;
+import javax.transaction.TransactionScoped;
 
 public class MicroJpaExtension implements Extension {
 
@@ -66,6 +68,7 @@ public class MicroJpaExtension implements Extension {
     private Map<PersistenceUnitLiteral, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
     private Set<PersistenceContextLiteral> persistenceContexts
         = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextLiteral, Boolean>());
+    private TransactionContext transactionContext = new TransactionContext();
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.configureQualifier(PersistenceUnit.class)
@@ -115,6 +118,11 @@ public class MicroJpaExtension implements Extension {
     }
 
     public void addBeans(@Observes AfterBeanDiscovery event) {
+        event.addBean()
+            .scope(ApplicationScoped.class)
+            .addType(TransactionContext.class)
+            .createWith(c -> transactionContext);
+        event.addContext(transactionContext);
         persistenceProperties.values().forEach(this::overrideProperties);
         persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
@@ -125,7 +133,7 @@ public class MicroJpaExtension implements Extension {
                 .destroyWith((emf, c) -> emf.close()));
         persistenceContexts.forEach(persistenceContext -> event
                 .<EntityManager>addBean()
-                .scope(RequestScoped.class)
+                .scope(persistenceContext.type() == TRANSACTION ? TransactionScoped.class : RequestScoped.class)
                 .addType(EntityManager.class)
                 .addQualifiers(persistenceContext)
                 .createWith(c -> {
@@ -133,7 +141,7 @@ public class MicroJpaExtension implements Extension {
                         .select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext))
                         .get()
                         .createEntityManager();
-                    if (TransactionalInterceptor.isTransactionActive()) {
+                    if (transactionContext.isActive()) {
                         entityManager.getTransaction().begin();
                     }
                     return entityManager;
