@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -151,6 +152,8 @@ public class MicroJpaExtension implements Extension {
 
     private void overrideProperties(Map<String, String> properties) {
         properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties());
+        properties.putAll(System.getenv().entrySet().stream()
+            .collect(toMap(entry -> entry.getKey().replaceAll("_", ".").toLowerCase(), Entry::getValue)));
         ofNullable(properties.get(JTA_DATA_SOURCE_PROPERTY))
             .filter(String::isEmpty)
             .ifPresent(jtaDataSource -> properties.put(JTA_DATA_SOURCE_PROPERTY, null));
