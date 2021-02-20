@@ -135,7 +135,16 @@
               <goal>test</goal>
             </goals>
             <configuration>
-              <groups>simple-unit-test,application-exception,multiple-persistence-units</groups>
+              <groups>simple-unit-test,multiple-persistence-units</groups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>with-application-exception</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <groups>application-exception</groups>
             </configuration>
           </execution>
           <execution>

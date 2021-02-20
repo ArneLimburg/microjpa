@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2020 - 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package org.microjpa;
 
 import static java.util.Optional.ofNullable;
-import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
-import static javax.transaction.Transactional.TxType.REQUIRED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,26 +23,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.Priority;
 import javax.ejb.ApplicationException;
-import javax.enterprise.context.Dependent;
+import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import javax.transaction.Transactional;
 
-@Dependent
-@Transactional(REQUIRED)
-@Interceptor
-@Priority(LIBRARY_AFTER)
-public class TransactionalInterceptor {
+public abstract class AbstractTransactionalInterceptor {
 
     private static final boolean APPLICATION_EXCEPTION_AVAILABLE;
     static {
@@ -62,27 +52,30 @@ public class TransactionalInterceptor {
     @Inject
     private TransactionContext transactionContext;
 
-    @AroundInvoke
-    public Object transactional(InvocationContext context) throws Exception {
-        boolean beginInThisMethod = !transactionContext.isActive();
-        if (beginInThisMethod) {
-            transactionContext.activate();
-            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
-        }
+    protected Object transactional(InvocationContext context) throws Exception {
         try {
             return context.proceed();
         } catch (Exception e) {
             checkRollback(e);
             throw e;
-        } finally {
-            if (beginInThisMethod) {
-                getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(completeTransaction());
-                transactionContext.deactivate();
-            }
         }
     }
 
-    private Consumer<EntityTransaction> completeTransaction() {
+    protected boolean isTransactionActive() {
+        return transactionContext.isActive();
+    }
+
+    protected void beginTransaction() {
+        transactionContext.activate();
+        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
+    }
+
+    protected void completeTransaction() {
+        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(complete());
+        transactionContext.deactivate();
+    }
+
+    private Consumer<EntityTransaction> complete() {
         return t -> {
             if (t.getRollbackOnly()) {
                 t.rollback();
@@ -97,8 +90,14 @@ public class TransactionalInterceptor {
                 .getBeans(EntityManager.class, new Any.Literal());
         List<EntityManager> entityManagers = new ArrayList<>();
         entityManagerBeans.forEach(bean -> {
-            Context context = beanManager.getContext(bean.getScope());
-            Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
+            try {
+                Context context = beanManager.getContext(bean.getScope());
+                if (context.isActive()) {
+                    Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
+                }
+            } catch (ContextNotActiveException e) {
+                // thrown by weld when the context is not active
+            }
         });
         return entityManagers;
     }
@@ -147,7 +146,10 @@ public class TransactionalInterceptor {
         }
 
         private void setRollbackOnly() {
-            entityManagers.stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+            entityManagers.stream()
+                .map(EntityManager::getTransaction)
+                .filter(EntityTransaction::isActive)
+                .forEach(EntityTransaction::setRollbackOnly);
         }
     }
 }

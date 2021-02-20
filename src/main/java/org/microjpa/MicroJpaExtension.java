@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2020 - 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public class MicroJpaExtension implements Extension {
     private void overrideProperties(Map<String, String> properties) {
         properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties());
         properties.putAll(System.getenv().entrySet().stream()
-            .collect(toMap(entry -> entry.getKey().replaceAll("_", ".").toLowerCase(), Entry::getValue)));
+            .collect(toMap(entry -> entry.getKey().replace("_", ".").toLowerCase(), Entry::getValue)));
         ofNullable(properties.get(JTA_DATA_SOURCE_PROPERTY))
             .filter(String::isEmpty)
             .ifPresent(jtaDataSource -> properties.put(JTA_DATA_SOURCE_PROPERTY, null));
