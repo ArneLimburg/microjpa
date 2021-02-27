@@ -11,6 +11,10 @@ jobs:
 
     runs-on: ubuntu-18.04
 
+    strategy:
+      matrix:
+        profile: [owb, weld]
+
     steps:
       - id: checkout
         uses: actions/checkout@v2
@@ -26,6 +30,4 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Test with OpenWebBeans
-        run: mvn clean verify -Powb
-      - name: Test with Weld
-        run: mvn clean verify -Pweld
+        run: mvn clean verify -P${{ matrix.profile}}
