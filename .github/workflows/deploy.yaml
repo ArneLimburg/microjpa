@@ -12,10 +12,6 @@ jobs:
 
     runs-on: ubuntu-18.04
 
-    strategy:
-      matrix:
-        profile: [owb, weld]
-
     steps:
       - id: checkout
         uses: actions/checkout@v2
@@ -49,12 +45,12 @@ jobs:
         uses: s4u/maven-settings-action@v2.2.0
         with:
           servers: '[{"id": "ossrh", "username": "${OSSRH_USERNAME}", "password": "${OSSRH_PASSWORD}"}]'
-      - id: maven-build
-        name: Test with ${{matrix.profile }}
-        run: mvn clean package -P${{matrix.profile }}
-      - id: sonar-scan
-        name: Sonar scan with OpenWebBeans
-        run: mvn -Powb jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      - id: weld-test
+        name: Test with Weld
+        run: mvn clean package -Pweld
+      - id: owb-test
+        name: Test with OpenWebBeans
+        run: mvn clean package jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
