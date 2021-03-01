@@ -49,9 +49,9 @@ jobs:
         uses: s4u/maven-settings-action@v2.2.0
         with:
           servers: '[{"id": "ossrh", "username": "${OSSRH_USERNAME}", "password": "${OSSRH_PASSWORD}"}]'
-      - id: package ${{ matrix.profile }}
-        name: Test with ${{ matrix.profile }}
-        run: mvn clean package -P${{ matrix.profile }}
+      - id: maven-build
+        name: Test with ${{matrix.profile }}
+        run: mvn clean package -P${{matrix.profile }}
       - id: sonar-scan
         name: Sonar scan with OpenWebBeans
         run: mvn -Powb jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
