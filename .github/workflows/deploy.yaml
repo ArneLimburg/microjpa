@@ -54,7 +54,7 @@ jobs:
         run: mvn clean package -P${{ matrix.profile }}
       - id: sonar-scan
         name: Sonar scan with OpenWebBeans
-        run: mvn jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn -Powb jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
