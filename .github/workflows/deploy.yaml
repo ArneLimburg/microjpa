@@ -49,7 +49,7 @@ jobs:
         uses: s4u/maven-settings-action@v2.2.0
         with:
           servers: '[{"id": "ossrh", "username": "${OSSRH_USERNAME}", "password": "${OSSRH_PASSWORD}"}]'
-      - id: ${{ matrix.profile }}
+      - id: package ${{ matrix.profile }}
         name: Test with ${{ matrix.profile }}
         run: mvn clean package -P${{ matrix.profile }}
       - id: sonar-scan
