@@ -5,7 +5,7 @@
 
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>0.9.12-SNAPSHOT</version>
+  <version>0.9.11-SNAPSHOT</version>
 
   <name>MicroJPA</name>
   <url>http://www.microjpa.org</url>
