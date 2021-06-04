@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
+import javax.enterprise.event.TransactionPhase;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -42,6 +43,7 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.ProcessObserverMethod;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.enterprise.util.Nonbinding;
@@ -105,6 +107,41 @@ public class MicroJpaExtension implements Extension {
             .ifPresent(units -> stream(units.value()).forEach(this::initPersistenceProperties));
         ofNullable(annotatedType.getAnnotation(PersistenceContexts.class))
             .ifPresent(contexts -> stream(contexts.value()).forEach(this::addPersistenceContext));
+    }
+
+    public void addTransactionHandling(@Observes ProcessObserverMethod<?, ?> observerMethodEvent) {
+        if (!observerMethodEvent.getObserverMethod().isAsync()) {
+            TransactionPhase transactionPhase = observerMethodEvent.getObserverMethod().getTransactionPhase();
+            switch (transactionPhase) {
+                case IN_PROGRESS:
+                    observerMethodEvent.configureObserverMethod()
+                        .addQualifier(new InProgress.Literal())
+                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    break;
+                case BEFORE_COMPLETION:
+                    observerMethodEvent.configureObserverMethod()
+                        .addQualifier(new BeforeCompletion.Literal())
+                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    break;
+                case AFTER_COMPLETION:
+                    observerMethodEvent.configureObserverMethod()
+                        .addQualifier(new AfterCompletion.Literal())
+                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    break;
+                case AFTER_FAILURE:
+                    observerMethodEvent.configureObserverMethod()
+                        .addQualifier(new AfterFailure.Literal())
+                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    break;
+                case AFTER_SUCCESS:
+                    observerMethodEvent.configureObserverMethod()
+                        .addQualifier(new AfterSuccess.Literal())
+                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported transaction phase " + transactionPhase);
+            }
+        }
     }
 
     private void initPersistenceProperties(PersistenceUnit persistenceUnit) {

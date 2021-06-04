@@ -16,7 +16,11 @@
 package org.microjpa;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -26,6 +30,8 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 import javax.enterprise.inject.spi.Bean;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionScoped;
 
 import org.junit.jupiter.api.AfterAll;
@@ -56,12 +62,62 @@ public class TransactionContextTest {
     }
 
     @Test
+    @DisplayName("Activating TransacionContext does not lead to active transaction")
+    public void activationLeadsToActiveTransaction() throws SystemException {
+        context.activate();
+        MicroTransaction transaction = cdiContainer.select(MicroTransaction.class).get();
+        assertFalse(transaction.isActive());
+        assertEquals(Status.STATUS_NO_TRANSACTION, transaction.getStatus());
+        transaction.begin();
+        assertTrue(transaction.isActive());
+        context.deactivate();
+    }
+
+    @Test
+    @DisplayName("Transaction timeout is not supported")
+    public void transactionTimeoutIsNotSupported() {
+        context.activate();
+        MicroTransaction transaction = cdiContainer.select(MicroTransaction.class).get();
+        assertThrows(UnsupportedOperationException.class, () -> transaction.setTransactionTimeout(2));
+        context.deactivate();
+    }
+
+    @Test
     @DisplayName("Activating TransactionContext twice does not destroy created beans")
     public void activationTwiceDoesNotDestroyBeans() {
         context.activate();
         TransactionScopedTestBean instance = context.get(testBean, cdiContainer.getBeanManager().createCreationalContext(testBean));
         context.activate();
         assertEquals(instance.getId(), context.get(testBean).getId());
+        context.deactivate();
+    }
+
+    @Test
+    @DisplayName("Storing transactional resources")
+    public void transactionResources() {
+        context.activate();
+        MicroTransaction transaction = cdiContainer.select(MicroTransaction.class).get();
+        assertNull(transaction.getResource("key1"));
+        transaction.putResource("key1", "value1");
+        transaction.putResource("keyForNullValue", null);
+        assertEquals("value1", transaction.getResource("key1"));
+        assertNull(transaction.getResource("keyForNullValue"));
+        context.deactivate();
+    }
+
+    @Test
+    @DisplayName("Same key in same transaction and different keys for different transactions")
+    public void transactionKey() {
+        context.activate();
+        MicroTransaction transaction1 = cdiContainer.select(MicroTransaction.class).get();
+        Object transactionKey = transaction1.getTransactionKey();
+
+        assertEquals(transactionKey,  cdiContainer.select(MicroTransaction.class).get().getTransactionKey());
+        context.deactivate();
+
+        context.activate();
+        assertNotEquals(transactionKey,  cdiContainer.select(MicroTransaction.class).get().getTransactionKey());
+        context.deactivate();
     }
 
     @Test

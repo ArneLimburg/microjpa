@@ -27,8 +27,6 @@ import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.transaction.TransactionScoped;
 
-import org.microjpa.TransactionContext.Bean;
-
 public class TransactionContext implements AlterableContext {
 
     private ThreadLocal<Map<Contextual, Bean>> beans = new ThreadLocal<>();

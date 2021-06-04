@@ -17,21 +17,11 @@ package org.microjpa;
 
 import static java.util.Optional.ofNullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.ejb.ApplicationException;
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
-import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
 public abstract class AbstractTransactionalInterceptor {
@@ -48,9 +38,9 @@ public abstract class AbstractTransactionalInterceptor {
     }
 
     @Inject
-    private BeanManager beanManager;
+    private TransactionContext context;
     @Inject
-    private TransactionContext transactionContext;
+    private EntityTransaction transaction;
 
     protected Object transactional(InvocationContext context) throws Exception {
         try {
@@ -62,67 +52,37 @@ public abstract class AbstractTransactionalInterceptor {
     }
 
     protected boolean isTransactionActive() {
-        return transactionContext.isActive();
+        return context.isActive();
     }
 
     protected void beginTransaction() {
-        transactionContext.activate();
-        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::begin);
+        context.activate(); // this call is obsolete once the transaction is @ThreadScoped
+        transaction.begin();
     }
 
     protected void completeTransaction() {
-        getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(complete());
-        transactionContext.deactivate();
-    }
-
-    private Consumer<EntityTransaction> complete() {
-        return t -> {
-            if (t.getRollbackOnly()) {
-                t.rollback();
-            } else {
-                t.commit();
-            }
-        };
-    }
-
-    private List<EntityManager> getActiveEntityManagers() {
-        Set<Bean<? extends EntityManager>> entityManagerBeans = (Set<Bean<? extends EntityManager>>)(Set<?>)beanManager
-                .getBeans(EntityManager.class, new Any.Literal());
-        List<EntityManager> entityManagers = new ArrayList<>();
-        entityManagerBeans.forEach(bean -> {
-            try {
-                Context context = beanManager.getContext(bean.getScope());
-                if (context.isActive()) {
-                    Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
-                }
-            } catch (ContextNotActiveException e) {
-                // thrown by weld when the context is not active
-            }
-        });
-        return entityManagers;
+        if (transaction.getRollbackOnly()) {
+            transaction.rollback();
+        } else {
+            transaction.commit();
+        }
     }
 
     private void checkRollback(Exception e) {
         if (APPLICATION_EXCEPTION_AVAILABLE) {
-            new ApplicationExceptionRollbackPolicy(getActiveEntityManagers()).checkRollback(e);
+            new ApplicationExceptionRollbackPolicy().checkRollback(e);
         } else {
-            getActiveEntityManagers().stream().map(EntityManager::getTransaction).forEach(EntityTransaction::setRollbackOnly);
+            transaction.setRollbackOnly();
         }
     }
 
-    private static class ApplicationExceptionRollbackPolicy {
-
-        private List<EntityManager> entityManagers;
-
-        ApplicationExceptionRollbackPolicy(List<EntityManager> activeEntityManagers) {
-            entityManagers = activeEntityManagers;
-        }
+    private class ApplicationExceptionRollbackPolicy {
 
         public void checkRollback(Exception e) {
             Optional<ApplicationException> annotation = ofNullable(e.getClass().getAnnotation(ApplicationException.class));
             if (annotation.isPresent()) {
                 if (annotation.get().rollback()) {
-                    setRollbackOnly();
+                    transaction.setRollbackOnly();
                 }
             } else {
                 checkInheritedRollback(e.getClass().getSuperclass());
@@ -131,25 +91,18 @@ public abstract class AbstractTransactionalInterceptor {
 
         private void checkInheritedRollback(Class<?> exceptionType) {
             if (Exception.class.equals(exceptionType)) {
-                setRollbackOnly();
+                transaction.setRollbackOnly();
                 return;
             }
             Optional<ApplicationException> annotation = ofNullable(exceptionType.getAnnotation(ApplicationException.class));
             if (annotation.isPresent()) {
                 ApplicationException applicationExceptionAnnotation = annotation.get();
                 if (applicationExceptionAnnotation.inherited() && applicationExceptionAnnotation.rollback()) {
-                    setRollbackOnly();
+                    transaction.setRollbackOnly();
                 }
             } else {
                 checkInheritedRollback(exceptionType.getSuperclass());
             }
-        }
-
-        private void setRollbackOnly() {
-            entityManagers.stream()
-                .map(EntityManager::getTransaction)
-                .filter(EntityTransaction::isActive)
-                .forEach(EntityTransaction::setRollbackOnly);
         }
     }
 }

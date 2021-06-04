@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.child;
+package org.microjpa.event;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public class ExceptionChildRepository extends AbstractChildRepository {
+import javax.inject.Qualifier;
 
-    @PersistenceContext(unitName = "test-unit")
-    private EntityManager entityManager;
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AnotherQualifier {
 
-    @Override
-    protected EntityManager getEntityManager() {
-        return entityManager;
-    }
 }
