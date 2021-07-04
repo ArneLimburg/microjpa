@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.parent;
+package org.microjpa;
 
-import java.util.List;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.enterprise.context.NormalScope;
 
-import org.microjpa.child.TestChild;
-
-@Entity
-public class TestParent {
-
-    @Id
-    @GeneratedValue
-    private long id;
-
-    @OneToMany(mappedBy = "parent")
-    private List<TestChild> children;
-
-    public long getId() {
-        return id;
-    }
-
-    public List<TestChild> getChildren() {
-        return children;
-    }
+@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@NormalScope
+public @interface PersistenceScoped {
 }

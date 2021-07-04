@@ -231,22 +231,26 @@ public class EventConsumer {
     }
 
     public void consumeDoubleQualifiedEventBeforeCompletion(
-            @Observes(during = BEFORE_COMPLETION) @SomeQualifier @AnotherQualifier SomeEvent event) {
+        @Observes(during = BEFORE_COMPLETION) @SomeQualifier @AnotherQualifier SomeEvent event) {
+
         consumedDoubleQualifiedEventBeforeCompletion = true;
     }
 
     public void consumeDoubleQualifiedEventAfterCompletion(
-            @Observes(during = AFTER_COMPLETION) @SomeQualifier @AnotherQualifier SomeEvent event) {
+        @Observes(during = AFTER_COMPLETION) @SomeQualifier @AnotherQualifier SomeEvent event) {
+
         consumedDoubleQualifiedEventAfterCompletion = true;
     }
 
     public void consumeDoubleQualifiedEventAfterFailure(
-            @Observes(during = AFTER_FAILURE) @SomeQualifier @AnotherQualifier SomeEvent event) {
+        @Observes(during = AFTER_FAILURE) @SomeQualifier @AnotherQualifier SomeEvent event) {
+
         consumedDoubleQualifiedEventAfterFailure = true;
     }
 
     public void consumeDoubleQualifiedEventAfterSuccess(
-            @Observes(during = AFTER_SUCCESS) @SomeQualifier @AnotherQualifier SomeEvent event) {
+        @Observes(during = AFTER_SUCCESS) @SomeQualifier @AnotherQualifier SomeEvent event) {
+
         consumedDoubleQualifiedEventAfterSuccess = true;
     }
 

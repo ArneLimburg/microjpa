@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.parent;
+package org.microjpa.web;
 
-import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
+import javax.transaction.Transactional;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+@ApplicationScoped
+public class TransactionTemplate {
 
-import org.microjpa.child.TestChild;
-
-@Entity
-public class TestParent {
-
-    @Id
-    @GeneratedValue
-    private long id;
-
-    @OneToMany(mappedBy = "parent")
-    private List<TestChild> children;
-
-    public long getId() {
-        return id;
-    }
-
-    public List<TestChild> getChildren() {
-        return children;
+    @Transactional
+    public void runInTransaction(Runnable runnable) {
+        runnable.run();
     }
 }

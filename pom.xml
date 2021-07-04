@@ -5,7 +5,7 @@
 
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.1.0-SNAPSHOT</version>
 
   <name>MicroJPA</name>
   <url>http://www.microjpa.org</url>
@@ -344,6 +344,11 @@
           <scope>test</scope>
         </dependency>
         <dependency>
+          <groupId>org.apache.meecrowave</groupId>
+          <artifactId>meecrowave-junit</artifactId>
+          <version>1.2.11</version>
+        </dependency>
+        <dependency>
           <groupId>org.apache.deltaspike.cdictrl</groupId>
           <artifactId>deltaspike-cdictrl-owb</artifactId>
           <version>1.9.4</version>
@@ -354,6 +359,12 @@
     <profile>
       <id>weld</id>
       <dependencies>
+        <dependency>
+          <groupId>jakarta.ws.rs</groupId>
+          <artifactId>jakarta.ws.rs-api</artifactId>
+          <version>2.1.6</version>
+          <scope>test</scope>
+        </dependency>
         <dependency>
           <groupId>org.jboss.weld.se</groupId>
           <artifactId>weld-se-core</artifactId>
@@ -367,6 +378,19 @@
           <scope>test</scope>
         </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+              <testExcludes>
+                <testExclude>**/RequestScopedTest.java</testExclude>
+              </testExcludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>release</id>

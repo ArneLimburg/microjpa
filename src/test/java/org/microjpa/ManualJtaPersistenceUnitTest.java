@@ -39,13 +39,13 @@ public class ManualJtaPersistenceUnitTest
     @Test
     @DisplayName("found parent's id equals parent's id of found child but they are not same (different EntityManagers are used)")
     @PersistenceContext(unitName = "jta-unit", properties = {
-            @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
-            @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = ""),
-            @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
-            @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
+        @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
+        @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = ""),
+        @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
+        @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
     })
     public void find() {
 

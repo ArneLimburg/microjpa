@@ -25,19 +25,17 @@ import org.microjpa.relation.TransactionalJtaRelationService;
 import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
 @MultiplePersistenceUnitsTest
-@PersistenceContexts(@PersistenceContext(unitName = "jta-unit", properties
-    = {
-        @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
-        @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = "")
+@PersistenceContexts(@PersistenceContext(unitName = "jta-unit", properties = {
+    @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
+    @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = "")
     }))
-@PersistenceContext(unitName = "jta-unit", properties
-    = {
-            @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
-            @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
-            @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
-    })
+@PersistenceContext(unitName = "jta-unit", properties = {
+    @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
+    @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
+    @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
+    @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
+    @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
+})
 public class TransactionalJtaPersistenceUnitTest extends AbstractPersistenceUnitTest
     <TransactionalJtaRelationService, TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
 }

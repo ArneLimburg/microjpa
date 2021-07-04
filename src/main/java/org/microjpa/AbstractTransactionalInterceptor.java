@@ -56,7 +56,6 @@ public abstract class AbstractTransactionalInterceptor {
     }
 
     protected void beginTransaction() {
-        context.activate(); // this call is obsolete once the transaction is @ThreadScoped
         transaction.begin();
     }
 

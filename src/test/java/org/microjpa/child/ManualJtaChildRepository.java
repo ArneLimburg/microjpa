@@ -39,8 +39,8 @@ public class ManualJtaChildRepository extends AbstractChildRepository {
     public TestChild findByParentId(long parentId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         TestChild foundChild = entityManager.createNamedQuery(TestChild.FIND_BY_PARENT_ID, TestChild.class)
-                .setParameter("parentId", parentId)
-                .getSingleResult();
+            .setParameter("parentId", parentId)
+            .getSingleResult();
         entityManager.close();
         return foundChild;
     }

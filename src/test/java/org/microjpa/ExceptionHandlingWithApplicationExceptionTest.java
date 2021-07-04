@@ -61,7 +61,7 @@ public class ExceptionHandlingWithApplicationExceptionTest
 
     @Test
     @DisplayName("persist rolls back when it throws exception with superclass "
-            + "annotated with @ApplicationException(rollback = true, inherited = false)")
+        + "annotated with @ApplicationException(rollback = true, inherited = false)")
     void nestedRollbackOnPersistWithApplicationExceptionSuperclass() {
 
         testService.findParentAndChild(parentId);

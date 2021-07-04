@@ -33,7 +33,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.TransactionPhase;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
@@ -66,20 +70,24 @@ public class MicroJpaExtension implements Extension {
     private static final String JTA_DATA_SOURCE_PROPERTY = "javax.persistence.jtaDataSource";
     private static final String BEAN_MANAGER_PROPERTY = "javax.persistence.bean.manager";
     private static final PersistenceProperty[] EMPTY_PERSISTENCE_PROPERTIES = new PersistenceProperty[0];
-    private static final Annotation NONBINDING_LITERAL = new AnnotationLiteral<Nonbinding>() { };
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
+    private static final List<Class<? extends Annotation>> DEFAULT_SCOPE_TYPES
+        = unmodifiableList(asList(ApplicationScoped.class, SessionScoped.class, ConversationScoped.class, RequestScoped.class));
 
     private Map<PersistenceUnitLiteral, Map<String, Object>> persistenceProperties = new ConcurrentHashMap<>();
     private Set<PersistenceContextLiteral> persistenceContexts
         = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextLiteral, Boolean>());
     private TransactionContext transactionContext = new TransactionContext();
+    private ExtendedPersistenceContext extendedPersistenceContext = new ExtendedPersistenceContext();
 
     public void addQualifiers(@Observes BeforeBeanDiscovery event) {
         event.configureQualifier(PersistenceUnit.class)
-            .filterMethods(m -> m.getJavaMember().getName().equals(NAME)).forEach(m -> m.add(NONBINDING_LITERAL));
+            .filterMethods(m -> m.getJavaMember().getName().equals(NAME))
+            .forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
         event.configureQualifier(PersistenceContext.class)
-            .filterMethods(m -> NONBINDING_PROPERTIES.contains(m.getJavaMember().getName())).forEach(m -> m.add(NONBINDING_LITERAL));
+            .filterMethods(m -> NONBINDING_PROPERTIES.contains(m.getJavaMember().getName()))
+            .forEach(m -> m.add(Nonbinding.Literal.INSTANCE));
     }
 
     public void configurePersistenceAnnotations(@Observes ProcessAnnotatedType<?> event) {
@@ -116,9 +124,13 @@ public class MicroJpaExtension implements Extension {
             TransactionPhase transactionPhase = observerMethodEvent.getObserverMethod().getTransactionPhase();
             switch (transactionPhase) {
                 case IN_PROGRESS:
-                    observerMethodEvent.configureObserverMethod()
-                        .addQualifier(new InProgress.Literal())
-                        .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    if (!observerMethodEvent.getObserverMethod().getObservedQualifiers().stream()
+                        .anyMatch(a -> isInitializedOrDestroyedDefaultScopeQualifier(a))) {
+
+                        observerMethodEvent.configureObserverMethod()
+                            .addQualifier(new InProgress.Literal())
+                            .transactionPhase(TransactionPhase.IN_PROGRESS);
+                    }
                     break;
                 case BEFORE_COMPLETION:
                     observerMethodEvent.configureObserverMethod()
@@ -159,34 +171,59 @@ public class MicroJpaExtension implements Extension {
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.addBean()
-            .scope(ApplicationScoped.class)
+        .scope(ApplicationScoped.class)
             .addType(TransactionContext.class)
             .createWith(c -> transactionContext);
         event.addContext(transactionContext);
+        event.addBean()
+            .scope(ApplicationScoped.class)
+            .addType(ExtendedPersistenceContext.class)
+            .createWith(c -> extendedPersistenceContext);
+        event.addObserverMethod()
+            .beanClass(ExtendedPersistenceContext.class)
+            .addQualifier(Initialized.Literal.of(RequestScoped.class))
+            .observedType(Object.class)
+            .notifyWith(extendedPersistenceContext::beginRequest);
+        event.addObserverMethod()
+            .beanClass(ExtendedPersistenceContext.class)
+            .addQualifier(Destroyed.Literal.of(RequestScoped.class))
+            .observedType(Object.class)
+            .notifyWith(extendedPersistenceContext::endRequest);
+        event.addObserverMethod()
+            .beanClass(ExtendedPersistenceContext.class)
+            .addQualifier(Initialized.Literal.of(TransactionScoped.class))
+            .observedType(Object.class)
+            .notifyWith(extendedPersistenceContext::beginTransaction);
+        event.addObserverMethod()
+            .beanClass(ExtendedPersistenceContext.class)
+            .addQualifier(Destroyed.Literal.of(TransactionScoped.class))
+            .observedType(Object.class)
+            .notifyWith(extendedPersistenceContext::endTransaction);
+        event.addContext(extendedPersistenceContext);
         persistenceProperties.values().forEach(properties -> overrideProperties(properties, beanManager));
         persistenceProperties.entrySet().forEach(entry -> event
-                .<EntityManagerFactory>addBean()
-                .scope(ApplicationScoped.class)
-                .addType(EntityManagerFactory.class)
-                .addQualifiers(entry.getKey())
-                .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName, entry.getValue()))
-                .destroyWith((emf, c) -> emf.close()));
+            .<EntityManagerFactory>addBean()
+            .scope(ApplicationScoped.class)
+            .addType(EntityManagerFactory.class)
+            .addQualifiers(entry.getKey())
+            .createWith(c -> Persistence.createEntityManagerFactory(entry.getKey().unitName, entry.getValue()))
+            .destroyWith((emf, c) -> emf.close()));
         persistenceContexts.forEach(persistenceContext -> event
-                .<EntityManager>addBean()
-                .scope(persistenceContext.type() == TRANSACTION ? TransactionScoped.class : RequestScoped.class)
-                .addType(EntityManager.class)
-                .addQualifiers(persistenceContext)
-                .createWith(c -> {
-                    EntityManager entityManager = CDI.current()
-                        .select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext))
-                        .get()
-                        .createEntityManager();
-                    if (transactionContext.isActive()) {
-                        entityManager.getTransaction().begin();
-                    }
-                    return entityManager;
-                })
-                .destroyWith((em, c) -> em.close()));
+            .<EntityManager>addBean()
+            .scope(persistenceContext.type() == TRANSACTION ? TransactionScoped.class : PersistenceScoped.class)
+            .addType(EntityManager.class)
+            .addQualifiers(persistenceContext)
+            .createWith(c -> {
+                EntityManager entityManager = CDI.current()
+                    .select(EntityManagerFactory.class, new PersistenceUnitLiteral(persistenceContext))
+                    .get()
+                    .createEntityManager();
+                if (transactionContext.isActive()) {
+                    entityManager.getTransaction().begin();
+                }
+                return entityManager;
+            })
+            .destroyWith((em, c) -> em.close()));
     }
 
     private void overrideProperties(Map<String, Object> properties, BeanManager beanManager) {
@@ -206,6 +243,18 @@ public class MicroJpaExtension implements Extension {
 
     private <F extends AnnotatedField<?>> boolean isPersistenceAnnotationPresent(F field) {
         return field.isAnnotationPresent(PersistenceContext.class) || field.isAnnotationPresent(PersistenceUnit.class);
+    }
+
+    private boolean isInitializedOrDestroyedDefaultScopeQualifier(Annotation annotation) {
+        if (annotation.annotationType().equals(Initialized.class)) {
+            Initialized initialized = (Initialized)annotation;
+            return DEFAULT_SCOPE_TYPES.contains(initialized.value());
+        }
+        if (annotation.annotationType().equals(Destroyed.class)) {
+            Destroyed destroyed = (Destroyed)annotation;
+            return DEFAULT_SCOPE_TYPES.contains(destroyed.value());
+        }
+        return false;
     }
 
     private static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {

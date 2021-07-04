@@ -43,7 +43,8 @@ public class TransactionalEventDecorator<T> implements Event<T>, Serializable {
 
     @Inject
     public TransactionalEventDecorator(
-            @Delegate Event<T> delegate, TransactionContext context, TransactionSynchronizationRegistry registry) {
+        @Delegate Event<T> delegate, TransactionContext context, TransactionSynchronizationRegistry registry) {
+
         this.delegate = delegate;
         this.context = context;
         this.registry = registry;

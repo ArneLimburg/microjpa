@@ -24,11 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ContextNotActiveException;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
 import javax.enterprise.context.spi.Context;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -41,14 +45,19 @@ import javax.transaction.TransactionScoped;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-@TransactionScoped
+@PersistenceScoped
 public class MicroTransaction implements UserTransaction, EntityTransaction, TransactionSynchronizationRegistry, Serializable {
 
     @Inject
     private BeanManager beanManager;
     @Inject
     private TransactionContext transactionContext;
+    @Inject @Initialized(TransactionScoped.class)
+    private Event<MicroTransaction> transactionScopedInitializedEvent;
+    @Inject @Destroyed(TransactionScoped.class)
+    private Event<MicroTransaction> transactionScopedDestroyedEvent;
 
+    private Object transactionKey;
     private TransactionStatus status = TransactionStatus.STATUS_NO_TRANSACTION;
     private List<Synchronization> synchronizations;
     private Map<Object, Object> transactionResources;
@@ -60,12 +69,14 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
 
     @Override
     public Object getTransactionKey() {
-        return System.identityHashCode(this);
+        return transactionKey;
     }
 
     @Override
     public void begin() {
         transactionContext.activate();
+        transactionScopedInitializedEvent.fire(this);
+        transactionKey = UUID.randomUUID();
         status = TransactionStatus.STATUS_ACTIVE;
         EntityManagerOperation beginTransaction = operation(em -> em.getTransaction().begin());
         getActiveEntityManagers().forEach(beginTransaction);
@@ -79,8 +90,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         EntityManagerOperation commitTransaction = operation(em -> em.getTransaction().commit());
         getActiveEntityManagers().forEach(commitTransaction);
         status = TransactionStatus.STATUS_COMMITTED;
-        synchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
-        transactionContext.deactivate();
+        end();
         commitTransaction.checkForException();
     }
 
@@ -91,8 +101,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         EntityManagerOperation rollbackTransaction = operation(em -> em.getTransaction().rollback());
         getActiveEntityManagers().forEach(rollbackTransaction);
         status = TransactionStatus.STATUS_ROLLEDBACK;
-        synchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
-        transactionContext.deactivate();
+        end();
         rollbackTransaction.checkForException();
     }
 
@@ -102,8 +111,8 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
             return true;
         }
         boolean rollbackOnly = getActiveEntityManagers().stream()
-                .map(EntityManager::getTransaction)
-                .anyMatch(EntityTransaction::getRollbackOnly);
+            .map(EntityManager::getTransaction)
+            .anyMatch(EntityTransaction::getRollbackOnly);
         if (rollbackOnly) {
             status = TransactionStatus.STATUS_MARKED_ROLLBACK;
         }
@@ -156,9 +165,18 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         return ofNullable(transactionResources).map(r -> r.get(key)).orElse(null);
     }
 
+    private void end() {
+        synchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
+        transactionContext.deactivate();
+        transactionKey = null;
+        transactionResources = null;
+        transactionScopedDestroyedEvent.fire(this);
+    }
+
     private List<EntityManager> getActiveEntityManagers() {
-        Set<Bean<? extends EntityManager>> entityManagerBeans = (Set<Bean<? extends EntityManager>>)(Set<?>)beanManager
-                .getBeans(EntityManager.class, new Any.Literal());
+        Set<Bean<? extends EntityManager>> entityManagerBeans
+            = (Set<Bean<? extends EntityManager>>)(Set<?>)beanManager.getBeans(EntityManager.class, new Any.Literal());
+
         List<EntityManager> entityManagers = new ArrayList<>();
         entityManagerBeans.forEach(bean -> {
             try {

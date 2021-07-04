@@ -69,7 +69,11 @@
         name="option"
         value="top" />
     </module>
-    <module name="Indentation" />
+    <module name="Indentation">
+      <property
+        name="forceStrictCondition"
+        value="true" />
+    </module>
     <module name="InnerAssignment" />
     <module name="InterfaceIsType" />
 
