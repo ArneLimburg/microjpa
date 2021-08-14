@@ -32,6 +32,6 @@
   <persistence-unit
     name="jta-unit"
     transaction-type="JTA">
-    <jta-data-source>java:comp/env/ProductionDS</jta-data-source>
+<!--     <jta-data-source>java:comp/env/ProductionDS</jta-data-source> -->
   </persistence-unit>
 </persistence>

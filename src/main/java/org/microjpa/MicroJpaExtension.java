@@ -39,6 +39,7 @@ import javax.enterprise.event.TransactionPhase;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.Extension;
@@ -63,12 +64,13 @@ import javax.transaction.TransactionScoped;
 public class MicroJpaExtension implements Extension {
 
     private static final String JTA_DATA_SOURCE_PROPERTY = "javax.persistence.jtaDataSource";
+    private static final String BEAN_MANAGER_PROPERTY = "javax.persistence.bean.manager";
     private static final PersistenceProperty[] EMPTY_PERSISTENCE_PROPERTIES = new PersistenceProperty[0];
     private static final Annotation NONBINDING_LITERAL = new AnnotationLiteral<Nonbinding>() { };
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
 
-    private Map<PersistenceUnitLiteral, Map<String, String>> persistenceProperties = new ConcurrentHashMap<>();
+    private Map<PersistenceUnitLiteral, Map<String, Object>> persistenceProperties = new ConcurrentHashMap<>();
     private Set<PersistenceContextLiteral> persistenceContexts
         = Collections.newSetFromMap(new ConcurrentHashMap<PersistenceContextLiteral, Boolean>());
     private TransactionContext transactionContext = new TransactionContext();
@@ -155,13 +157,13 @@ public class MicroJpaExtension implements Extension {
             .putAll(stream(persistenceContext.properties()).collect(toMap(PersistenceProperty::name, PersistenceProperty::value)));
     }
 
-    public void addBeans(@Observes AfterBeanDiscovery event) {
+    public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.addBean()
             .scope(ApplicationScoped.class)
             .addType(TransactionContext.class)
             .createWith(c -> transactionContext);
         event.addContext(transactionContext);
-        persistenceProperties.values().forEach(this::overrideProperties);
+        persistenceProperties.values().forEach(properties -> overrideProperties(properties, beanManager));
         persistenceProperties.entrySet().forEach(entry -> event
                 .<EntityManagerFactory>addBean()
                 .scope(ApplicationScoped.class)
@@ -187,11 +189,13 @@ public class MicroJpaExtension implements Extension {
                 .destroyWith((em, c) -> em.close()));
     }
 
-    private void overrideProperties(Map<String, String> properties) {
+    private void overrideProperties(Map<String, Object> properties, BeanManager beanManager) {
+        properties.put(BEAN_MANAGER_PROPERTY, beanManager);
         properties.putAll((Map<String, String>)(Map<?, ?>)System.getProperties());
         properties.putAll(System.getenv().entrySet().stream()
             .collect(toMap(entry -> entry.getKey().replace("_", ".").toLowerCase(), Entry::getValue)));
         ofNullable(properties.get(JTA_DATA_SOURCE_PROPERTY))
+            .map(Object::toString)
             .filter(String::isEmpty)
             .ifPresent(jtaDataSource -> properties.put(JTA_DATA_SOURCE_PROPERTY, null));
     }
