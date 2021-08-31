@@ -5,7 +5,7 @@
 
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.1.1</version>
 
   <name>MicroJPA</name>
   <url>http://www.microjpa.org</url>
@@ -25,7 +25,7 @@
     <url>https://github.com/ArneLimburg/microjpa</url>
     <connection>scm:git:git://github.com/ArneLimburg/microjpa.git</connection>
     <developerConnection>scm:git:https://github.com/ArneLimburg/microjpa.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>1.1.1</tag>
   </scm>
 
   <developers>
