@@ -31,4 +31,4 @@ jobs:
         run: mvn clean package -Pweld
       - id: owb-test
         name: Test with OpenWebBeans
-        run: mvn clean package
+        run: mvn package
