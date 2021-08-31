@@ -11,10 +11,6 @@ jobs:
 
     runs-on: ubuntu-18.04
 
-    strategy:
-      matrix:
-        profile: [owb, weld]
-
     steps:
       - id: checkout
         uses: actions/checkout@v2
@@ -23,11 +19,16 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Cache Maven packages
+      - id: setup-maven
+        name: Cache Maven packages
         uses: actions/cache@v2
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Test with ${{ matrix.profile}}
-        run: mvn clean verify -P${{ matrix.profile}}
+      - id: weld-test
+        name: Test with Weld
+        run: mvn clean package -Pweld
+      - id: owb-test
+        name: Test with OpenWebBeans
+        run: mvn clean package
