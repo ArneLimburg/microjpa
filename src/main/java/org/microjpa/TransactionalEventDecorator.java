@@ -20,6 +20,7 @@ import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
 
 import javax.annotation.Priority;
 import javax.decorator.Decorator;
@@ -38,22 +39,27 @@ import javax.transaction.TransactionSynchronizationRegistry;
 public class TransactionalEventDecorator<T> implements Event<T>, Serializable {
 
     private Event<T> delegate;
-    private TransactionContext context;
+    private TransactionContext transactionContext;
     private TransactionSynchronizationRegistry registry;
+    private ExtendedPersistenceContext extendedContext;
 
     @Inject
     public TransactionalEventDecorator(
-        @Delegate Event<T> delegate, TransactionContext context, TransactionSynchronizationRegistry registry) {
+        @Delegate Event<T> delegate,
+        TransactionContext transactionContext,
+        TransactionSynchronizationRegistry registry,
+        ExtendedPersistenceContext extendedContext) {
 
         this.delegate = delegate;
-        this.context = context;
+        this.transactionContext = transactionContext;
         this.registry = registry;
+        this.extendedContext = extendedContext;
     }
 
     @Override
     public void fire(T event) {
         delegate.select(new AnnotationLiteral<InProgress>() { }).fire(event);
-        if (context.isActive()) {
+        if (transactionContext.isActive()) {
             registry.registerInterposedSynchronization(new Synchronization() {
 
                 @Override
@@ -76,26 +82,32 @@ public class TransactionalEventDecorator<T> implements Event<T>, Serializable {
 
     @Override
     public Event<T> select(Annotation... qualifiers) {
-        return new TransactionalEventDecorator<T>(delegate.select(qualifiers), context, registry);
+        return new TransactionalEventDecorator<T>(delegate.select(qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
     public <U extends T> Event<U> select(Class<U> subtype, Annotation... qualifiers) {
-        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), context, registry);
+        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
     public <U extends T> Event<U> select(TypeLiteral<U> subtype, Annotation... qualifiers) {
-        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), context, registry);
+        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
     public <U extends T> CompletionStage<U> fireAsync(U event) {
-        return fireAsync(event, NotificationOptions.builder().build());
+        return fireAsync(event, NotificationOptions.builder().build()).whenComplete(deactivateExtendedContext());
     }
 
     @Override
     public <U extends T> CompletionStage<U> fireAsync(U event, NotificationOptions options) {
-        return delegate.fireAsync(event, options);
+        return delegate.fireAsync(event, options).whenComplete(deactivateExtendedContext());
+    }
+
+    private <U> BiConsumer<U, Throwable> deactivateExtendedContext() {
+        return (result, exception) -> {
+            extendedContext.deactivate();
+        };
     }
 }

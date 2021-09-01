@@ -23,24 +23,13 @@ import java.net.URL;
 
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.meecrowave.Meecrowave;
-import org.apache.meecrowave.junit5.MeecrowaveConfig;
-import org.apache.meecrowave.testing.ConfigurationInject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
-@MeecrowaveConfig
-@MultiplePersistenceUnitsTest
-public class RequestScopedTest {
+public abstract class AbstractRequestScopedTest {
 
-    @ConfigurationInject
-    private Meecrowave.Builder config;
     private URL url;
 
-    @BeforeEach
-    public void initialize() throws IOException {
-        URL baseUrl = new URL("http://localhost:" + config.getHttpPort() + "/test-parent");
+    public void initialize(URL baseUrl) throws IOException {
         assertEquals(Status.OK.getStatusCode(), get(baseUrl).getResponseCode());
         url = new URL(baseUrl, "test-parent/managed");
     }

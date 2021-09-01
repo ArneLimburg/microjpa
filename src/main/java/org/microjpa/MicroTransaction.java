@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -181,11 +180,11 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         entityManagerBeans.forEach(bean -> {
             try {
                 Context context = beanManager.getContext(bean.getScope());
-                if (context.isActive()) {
-                    Optional.ofNullable(context.get(bean)).ifPresent(entityManagers::add);
-                }
+                ofNullable(context.get(bean)).ifPresent(entityManagers::add);
             } catch (ContextNotActiveException e) {
-                // thrown by weld when the context is not active
+                // thrown when the context is not active,
+                // in which case no entity manager is available for that bean.
+                // So the exception can safely be ignored.
             }
         });
         return entityManagers;

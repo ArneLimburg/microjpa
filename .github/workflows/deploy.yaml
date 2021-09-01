@@ -50,7 +50,7 @@ jobs:
         run: mvn clean package -Pweld
       - id: owb-test
         name: Test with OpenWebBeans
-        run: mvn package jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn clean package jacoco:report org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
