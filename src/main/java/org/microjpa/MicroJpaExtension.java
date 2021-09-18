@@ -223,7 +223,7 @@ public class MicroJpaExtension implements Extension {
                 }
                 return entityManager;
             })
-            .destroyWith((em, c) -> em.close()));
+            .destroyWith((em, c) -> ofNullable(em).ifPresent(EntityManager::close)));
     }
 
     private void overrideProperties(Map<String, Object> properties, BeanManager beanManager) {
