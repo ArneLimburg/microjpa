@@ -27,9 +27,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.microjpa.beans.OuterBean;
-import org.microjpa.tags.UnitTest;
 
-@UnitTest
 public class TransactionTypeTest {
 
     private static SeContainer cdiContainer;

@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 import org.junit.jupiter.api.Tag;
 
-@Tag("application-exception")
+@Tag("application-exception-test")
 @Target({ANNOTATION_TYPE, TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApplicationExceptionTest {

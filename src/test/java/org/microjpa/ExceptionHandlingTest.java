@@ -18,6 +18,8 @@ package org.microjpa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.microjpa.child.TestChild;
@@ -26,25 +28,27 @@ import org.microjpa.exception.InheritingRollbackApplicationException;
 import org.microjpa.exception.InheritingRollbackApplicationExceptionSubclass;
 import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
+import org.microjpa.relation.TransactionalRelationService.NoRollbackException;
+import org.microjpa.relation.TransactionalRelationService.RollbackException;
+import org.microjpa.tags.ApplicationExceptionTest;
 
-@MultiplePersistenceUnitsTest
+@ApplicationExceptionTest
 public class ExceptionHandlingTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 
     @Test
-    @DisplayName("persist rolls back on exception")
+    @DisplayName("persist rolls back on runtime exception")
     void rollbackOnPersist() {
 
         testService.findParentAndChild(parentId);
         TestChild newChild = new TestChild();
-        assertThrows(IllegalStateException.class, () -> testService.persistWithException(newChild));
+        assertThrows(IllegalStateException.class, () -> testService.persistWithRuntimeException(newChild));
         testChildRepository.clear();
         assertEquals(1, testChildRepository.findAll().size());
     }
 
     @Test
-    @DisplayName("persist rolls back on nested exception")
+    @DisplayName("persist rolls back on nested runtime exception")
     void nestedRollbackOnPersist() {
 
         testService.findParentAndChild(parentId);
@@ -52,6 +56,83 @@ public class ExceptionHandlingTest
         assertThrows(IllegalStateException.class, () -> testService.persistWithNestedRuntimeException(newChild));
         testChildRepository.clear();
         assertEquals(1, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist does not roll back on checked exception")
+    void noRollbackOnCheckedException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(IOException.class, () -> testService.persistWithCheckedException(newChild));
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist does not roll back on nested checked exception")
+    void noRollbackOnNestedCheckedException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(IOException.class, () -> testService.persistWithNestedCheckedException(newChild));
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("@Transactional(dontRollbackOn = ...) takes precedence")
+    void dontRollbackTakesPrecedence() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(NoRollbackException.class, () -> testService.persistWithConflictingDeclaration(newChild));
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist rolls back on included checked exception")
+    void rollbackOnDeclaredCheckedException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(RollbackException.class, () -> testService.persistWithDeclaredCheckedException(newChild));
+        testChildRepository.clear();
+        assertEquals(1, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist rolls back on nested included checked exception")
+    void nestedRollbackOnDeclaredCheckedException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(RollbackException.class, () -> testService.persistWithNestedDeclaredCheckedException(newChild));
+        testChildRepository.clear();
+        assertEquals(1, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist does not roll back on excluded runtime exception")
+    void noRollbackOnDeclaredRuntimeException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(NoRollbackException.class, () -> testService.persistWithDeclaredRuntimeException(newChild));
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
+    }
+
+    @Test
+    @DisplayName("persist does not roll back on nested excluded runtime exception")
+    void noRollbackOnNestedDeclaredRuntimeException() {
+
+        testService.findParentAndChild(parentId);
+        TestChild newChild = new TestChild();
+        assertThrows(NoRollbackException.class, () -> testService.persistWithNestedDeclaredRuntimeException(newChild));
+        testChildRepository.clear();
+        assertEquals(2, testChildRepository.findAll().size());
     }
 
     @Test

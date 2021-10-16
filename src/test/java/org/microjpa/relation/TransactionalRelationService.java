@@ -15,26 +15,69 @@
  */
 package org.microjpa.relation;
 
+import java.io.IOException;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;
 import org.microjpa.parent.TransactionalParentRepository;
+import org.microjpa.relation.TransactionalRelationService.NoRollbackException;
+import org.microjpa.relation.TransactionalRelationService.RollbackException;
 
-@Transactional
+@Transactional(rollbackOn = RollbackException.class, dontRollbackOn = NoRollbackException.class)
 @ApplicationScoped
 public class TransactionalRelationService
     extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
 
-    public void persistWithException(TestChild testChild) {
+    @Transactional
+    public void persistWithRuntimeException(TestChild testChild) {
         childRepository.persist(testChild);
         childRepository.flush();
         throw new IllegalStateException("persist failed");
     }
 
+    @Transactional
     public void persistWithNestedRuntimeException(TestChild testChild) {
         childRepository.persistWithRuntimeException(testChild);
+    }
+
+    public void persistWithCheckedException(TestChild testChild) throws IOException {
+        childRepository.persist(testChild);
+        childRepository.flush();
+        throw new IOException("persist successfull");
+    }
+
+    public void persistWithNestedCheckedException(TestChild testChild) throws IOException {
+        childRepository.persistWithCheckedException(testChild);
+    }
+
+    @Transactional(rollbackOn = NoRollbackException.class, dontRollbackOn = NoRollbackException.class)
+    public void persistWithConflictingDeclaration(TestChild testChild) throws IOException {
+        childRepository.persist(testChild);
+        childRepository.flush();
+        throw new NoRollbackException();
+    }
+
+    public void persistWithDeclaredRuntimeException(TestChild testChild) {
+        childRepository.persist(testChild);
+        childRepository.flush();
+        throw new NoRollbackException();
+    }
+
+    public void persistWithNestedDeclaredRuntimeException(TestChild testChild) throws IOException {
+        childRepository.persistWithDeclaredRuntimeException(testChild);
+    }
+
+    public void persistWithDeclaredCheckedException(TestChild testChild) throws RollbackException {
+        childRepository.persist(testChild);
+        childRepository.flush();
+        throw new RollbackException();
+    }
+
+    public void persistWithNestedDeclaredCheckedException(TestChild testChild) throws RollbackException {
+        childRepository.persistWithDeclaredCheckedException(testChild);
     }
 
     public void persistWithNoRollbackApplicationException(TestChild testChild) {
@@ -67,5 +110,11 @@ public class TransactionalRelationService
 
     public void persistWithInheritingRollbackApplicationExceptionSubclass(TestChild testChild) {
         childRepository.persistWithInheritingRollbackApplicationExceptionSubclass(testChild);
+    }
+
+    public static class NoRollbackException extends RuntimeException {
+    }
+
+    public static class RollbackException extends Exception {
     }
 }

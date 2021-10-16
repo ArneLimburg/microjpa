@@ -24,9 +24,7 @@ import org.microjpa.child.ManualChildRepository;
 import org.microjpa.parent.ManualParentRepository;
 import org.microjpa.relation.ManualRelationService;
 import org.microjpa.relation.Relation;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
-@MultiplePersistenceUnitsTest
 public class ManualPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualRelationService, ManualParentRepository, ManualChildRepository> {
 

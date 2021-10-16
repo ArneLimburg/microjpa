@@ -27,5 +27,5 @@ import org.junit.jupiter.api.Tag;
 @Tag("single-persistence-unit")
 @Target({ANNOTATION_TYPE, TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SinglePersistenceUnitTest {
+public @interface SinglePersistenceUnit {
 }

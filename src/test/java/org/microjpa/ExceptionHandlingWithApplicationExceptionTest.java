@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;
@@ -30,9 +29,7 @@ import org.microjpa.exception.RollbackApplicationException;
 import org.microjpa.exception.RollbackApplicationExceptionSubclass;
 import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService;
-import org.microjpa.tags.ApplicationExceptionTest;
 
-@ApplicationExceptionTest
 public class ExceptionHandlingWithApplicationExceptionTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 
@@ -84,7 +81,6 @@ public class ExceptionHandlingWithApplicationExceptionTest
     }
 
     @Test
-    @Tag("application-exception")
     @DisplayName("persist throws exception annotated with @ApplicationException(rollback = false, inherited = true)")
     void persistWithInheritingNoRollbackApplicationException() {
 
@@ -97,7 +93,6 @@ public class ExceptionHandlingWithApplicationExceptionTest
     }
 
     @Test
-    @Tag("application-exception")
     @DisplayName("persist throws exception with superclass annotated with @ApplicationException(rollback = false, inherited = true)")
     void persistWithInheritingApplicationExceptionSuperclass() {
 

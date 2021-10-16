@@ -22,10 +22,8 @@ import org.apache.meecrowave.Meecrowave;
 import org.apache.meecrowave.junit5.MeecrowaveConfig;
 import org.apache.meecrowave.testing.ConfigurationInject;
 import org.junit.jupiter.api.BeforeEach;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
 @MeecrowaveConfig
-@MultiplePersistenceUnitsTest
 public class MeecrowaveRequestScopedTest extends AbstractRequestScopedTest {
 
     @ConfigurationInject

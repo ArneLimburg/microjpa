@@ -17,14 +17,16 @@ package org.microjpa;
 
 import static java.util.Optional.ofNullable;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import javax.ejb.ApplicationException;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
 import javax.persistence.EntityTransaction;
+import javax.transaction.Transactional;
 
-public abstract class AbstractTransactionalInterceptor {
+public abstract class AbstractTransactionalInterceptor implements Serializable {
 
     private static final boolean APPLICATION_EXCEPTION_AVAILABLE;
     static {
@@ -36,6 +38,7 @@ public abstract class AbstractTransactionalInterceptor {
         }
         APPLICATION_EXCEPTION_AVAILABLE = applicationExceptionAvailable;
     }
+    private static final Class[] ROLLBACK_ON = {RuntimeException.class};
 
     @Inject
     private TransactionContext context;
@@ -46,7 +49,7 @@ public abstract class AbstractTransactionalInterceptor {
         try {
             return context.proceed();
         } catch (Exception e) {
-            checkRollback(e);
+            checkRollback(getTransactional(context), e);
             throw e;
         }
     }
@@ -67,15 +70,85 @@ public abstract class AbstractTransactionalInterceptor {
         }
     }
 
-    private void checkRollback(Exception e) {
+    private Transactional getTransactional(InvocationContext context) {
+        Transactional transactional = context.getMethod().getAnnotation(Transactional.class);
+        if (transactional != null) {
+            return transactional;
+        }
+        Class<?> type = context.getTarget().getClass();
+        do {
+            transactional = type.getAnnotation(Transactional.class);
+            type = type.getSuperclass();
+        } while (transactional == null);
+        return transactional;
+    }
+
+    private void checkRollback(Transactional transactional, Exception exception) {
+        RollbackPolicy rollbackPolicy;
         if (APPLICATION_EXCEPTION_AVAILABLE) {
-            new ApplicationExceptionRollbackPolicy().checkRollback(e);
+            rollbackPolicy = new ApplicationExceptionRollbackPolicy(transactional);
         } else {
-            transaction.setRollbackOnly();
+            rollbackPolicy = new RollbackPolicy(transactional);
+        }
+        rollbackPolicy.checkRollback(exception);
+    }
+
+    private class RollbackPolicy implements Serializable {
+
+        private Class[] rollbackOn;
+        private Class[] dontRollbackOn;
+
+        protected RollbackPolicy(Transactional transactional) {
+            rollbackOn = transactional.rollbackOn();
+            dontRollbackOn = transactional.dontRollbackOn();
+            if (rollbackOn.length == 0) {
+                rollbackOn = ROLLBACK_ON;
+            }
+        }
+
+        public void checkRollback(Exception e) {
+            checkInheritedRollback(e.getClass());
+        }
+
+        protected void checkInheritedRollback(Class<?> exceptionType) {
+            if (shouldNotRollback(exceptionType)) {
+                // don't roll back
+                return;
+            }
+            if (shouldRollback(exceptionType)) {
+                transaction.setRollbackOnly();
+                return;
+            }
+            checkInheritedRollback(exceptionType.getSuperclass());
+        }
+
+        protected boolean shouldRollback(Class<?> exceptionType) {
+            for (Class<?> rollbackOnClass: rollbackOn) {
+                if (rollbackOnClass.equals(exceptionType)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        protected boolean shouldNotRollback(Class<?> exceptionType) {
+            if (exceptionType == null) {
+                return true;
+            }
+            for (Class<?> dontRollbackOnClass: dontRollbackOn) {
+                if (dontRollbackOnClass.equals(exceptionType)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
-    private class ApplicationExceptionRollbackPolicy {
+    private class ApplicationExceptionRollbackPolicy extends RollbackPolicy implements Serializable {
+
+        protected ApplicationExceptionRollbackPolicy(Transactional transactional) {
+            super(transactional);
+        }
 
         public void checkRollback(Exception e) {
             Optional<ApplicationException> annotation = ofNullable(e.getClass().getAnnotation(ApplicationException.class));
@@ -84,12 +157,16 @@ public abstract class AbstractTransactionalInterceptor {
                     transaction.setRollbackOnly();
                 }
             } else {
-                checkInheritedRollback(e.getClass().getSuperclass());
+                checkInheritedRollback(e.getClass());
             }
         }
 
-        private void checkInheritedRollback(Class<?> exceptionType) {
-            if (Exception.class.equals(exceptionType)) {
+        protected void checkInheritedRollback(Class<?> exceptionType) {
+            if (shouldNotRollback(exceptionType)) {
+                // don't roll back
+                return;
+            }
+            if (shouldRollback(exceptionType)) {
                 transaction.setRollbackOnly();
                 return;
             }

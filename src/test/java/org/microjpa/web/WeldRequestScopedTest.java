@@ -34,7 +34,6 @@ import org.jboss.resteasy.plugins.servlet.ResteasyServletInitializer;
 import org.jboss.weld.environment.servlet.Listener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
 import io.undertow.Undertow;
 import io.undertow.servlet.Servlets;
@@ -43,7 +42,6 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 
-@MultiplePersistenceUnitsTest
 public class WeldRequestScopedTest extends AbstractRequestScopedTest {
 
     private Undertow server;

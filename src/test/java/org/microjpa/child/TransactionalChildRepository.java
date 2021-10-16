@@ -15,6 +15,8 @@
  */
 package org.microjpa.child;
 
+import java.io.IOException;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -28,6 +30,8 @@ import org.microjpa.exception.NoRollbackApplicationException;
 import org.microjpa.exception.NoRollbackApplicationExceptionSubclass;
 import org.microjpa.exception.RollbackApplicationException;
 import org.microjpa.exception.RollbackApplicationExceptionSubclass;
+import org.microjpa.relation.TransactionalRelationService.NoRollbackException;
+import org.microjpa.relation.TransactionalRelationService.RollbackException;
 
 @Transactional
 @ApplicationScoped
@@ -49,6 +53,25 @@ public class TransactionalChildRepository extends AbstractChildRepository {
         entityManager.persist(testChild);
         entityManager.flush();
         throw new IllegalStateException("persit failed");
+    }
+
+    public void persistWithCheckedException(TestChild testChild) throws IOException {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new IOException("persit successfull");
+    }
+
+    @Transactional(dontRollbackOn = NoRollbackException.class)
+    public void persistWithDeclaredRuntimeException(TestChild testChild) {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new NoRollbackException();
+    }
+
+    public void persistWithDeclaredCheckedException(TestChild testChild) throws RollbackException {
+        entityManager.persist(testChild);
+        entityManager.flush();
+        throw new RollbackException();
     }
 
     public void persistWithNoRollbackApplicationException(TestChild testChild) {

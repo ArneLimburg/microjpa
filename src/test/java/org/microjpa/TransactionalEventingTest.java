@@ -28,9 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.microjpa.event.EventConsumer;
 import org.microjpa.event.EventProducer;
 import org.microjpa.event.SomeEvent;
-import org.microjpa.tags.MultiplePersistenceUnitsTest;
 
-@MultiplePersistenceUnitsTest
 public class TransactionalEventingTest {
 
     private SeContainer cdiContainer;
