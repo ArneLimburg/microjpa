@@ -19,9 +19,11 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContexts;
 import javax.persistence.PersistenceProperty;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.TransactionalJtaChildRepository;
 import org.microjpa.parent.TransactionalJtaParentRepository;
 import org.microjpa.relation.TransactionalJtaRelationService;
+import org.microjpa.test.CdiExtension;
 
 @PersistenceContexts(@PersistenceContext(unitName = "jta-unit", properties = {
     @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
@@ -34,6 +36,7 @@ import org.microjpa.relation.TransactionalJtaRelationService;
     @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
     @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
 })
+@ExtendWith(CdiExtension.class)
 public class TransactionalJtaPersistenceUnitTest extends AbstractPersistenceUnitTest
     <TransactionalJtaRelationService, TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
 }

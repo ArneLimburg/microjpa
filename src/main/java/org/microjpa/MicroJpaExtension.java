@@ -171,7 +171,7 @@ public class MicroJpaExtension implements Extension {
 
     public void addBeans(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         event.addBean()
-        .scope(ApplicationScoped.class)
+            .scope(ApplicationScoped.class)
             .addType(TransactionContext.class)
             .createWith(c -> transactionContext);
         event.addContext(transactionContext);
@@ -199,6 +199,11 @@ public class MicroJpaExtension implements Extension {
             .addQualifier(Destroyed.Literal.of(TransactionScoped.class))
             .observedType(Object.class)
             .notifyWith(extendedPersistenceContext::endTransaction);
+        event.addObserverMethod()
+            .beanClass(ExtendedPersistenceContext.class)
+            .addQualifier(Destroyed.Literal.of(ApplicationScoped.class))
+            .observedType(Object.class)
+            .notifyWith(extendedPersistenceContext::endApplication);
         event.addContext(extendedPersistenceContext);
         persistenceProperties.values().forEach(properties -> overrideProperties(properties, beanManager));
         persistenceProperties.entrySet().forEach(entry -> event
@@ -257,12 +262,12 @@ public class MicroJpaExtension implements Extension {
         return false;
     }
 
-    private static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
+    public static class PersistenceUnitLiteral extends AnnotationLiteral<PersistenceUnit> implements PersistenceUnit {
 
         private String name;
         private String unitName;
 
-        PersistenceUnitLiteral(PersistenceUnit unit) {
+        public PersistenceUnitLiteral(PersistenceUnit unit) {
             name = unit.name();
             unitName = unit.unitName();
         }
@@ -283,14 +288,14 @@ public class MicroJpaExtension implements Extension {
         }
     }
 
-    private static class PersistenceContextLiteral extends AnnotationLiteral<PersistenceContext> implements PersistenceContext {
+    public static class PersistenceContextLiteral extends AnnotationLiteral<PersistenceContext> implements PersistenceContext {
 
         private String name;
         private String unitName;
         private PersistenceContextType type;
         private SynchronizationType synchronization;
 
-        PersistenceContextLiteral(PersistenceContext context) {
+        public PersistenceContextLiteral(PersistenceContext context) {
             name = context.name();
             unitName = context.unitName();
             type = context.type();

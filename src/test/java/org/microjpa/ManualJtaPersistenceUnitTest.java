@@ -25,11 +25,14 @@ import javax.persistence.PersistenceUnits;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.ManualJtaChildRepository;
 import org.microjpa.parent.ManualJtaParentRepository;
 import org.microjpa.relation.ManualJtaRelationService;
 import org.microjpa.relation.Relation;
+import org.microjpa.test.CdiExtension;
 
+@ExtendWith(CdiExtension.class)
 @PersistenceUnits(@PersistenceUnit(unitName = "jta-unit"))
 public class ManualJtaPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualJtaRelationService, ManualJtaParentRepository, ManualJtaChildRepository> {

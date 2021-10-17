@@ -20,11 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.ManualChildRepository;
 import org.microjpa.parent.ManualParentRepository;
 import org.microjpa.relation.ManualRelationService;
 import org.microjpa.relation.Relation;
+import org.microjpa.test.CdiExtension;
 
+@ExtendWith(CdiExtension.class)
 public class ManualPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualRelationService, ManualParentRepository, ManualChildRepository> {
 

@@ -15,10 +15,13 @@
  */
 package org.microjpa;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.ExtendedChildRepository;
 import org.microjpa.parent.ExtendedParentRepository;
 import org.microjpa.relation.ExtendedRelationService;
+import org.microjpa.test.CdiExtension;
 
+@ExtendWith(CdiExtension.class)
 public class ExtendedPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
 }

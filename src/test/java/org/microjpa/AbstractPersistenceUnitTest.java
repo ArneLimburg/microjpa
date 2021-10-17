@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.lang.reflect.ParameterizedType;
 
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
 import javax.persistence.PersistenceUnit;
 
 import org.apache.deltaspike.cdise.api.ContextControl;
@@ -41,7 +41,7 @@ import org.microjpa.relation.Relation;
 abstract class AbstractPersistenceUnitTest
     <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
-    private SeContainer cdiContainer;
+    @Inject
     private ContextControl contextControl;
 
     protected S testService;
@@ -50,13 +50,11 @@ abstract class AbstractPersistenceUnitTest
 
     @BeforeEach
     public void startCdi() {
-        cdiContainer = SeContainerInitializer.newInstance().initialize();
-        contextControl = cdiContainer.select(ContextControl.class).get();
         contextControl.startContext(RequestScoped.class);
 
         ParameterizedType genericSuperclass = (ParameterizedType)getClass().getGenericSuperclass();
-        testService = cdiContainer.select((Class<S>)genericSuperclass.getActualTypeArguments()[0]).get();
-        testChildRepository = cdiContainer.select((Class<C>)genericSuperclass.getActualTypeArguments()[2]).get();
+        testService = CDI.current().select((Class<S>)genericSuperclass.getActualTypeArguments()[0]).get();
+        testChildRepository = CDI.current().select((Class<C>)genericSuperclass.getActualTypeArguments()[2]).get();
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();
@@ -67,7 +65,6 @@ abstract class AbstractPersistenceUnitTest
     @AfterEach
     public void shutDownCdi() {
         contextControl.stopContext(RequestScoped.class);
-        cdiContainer.close();
     }
 
     @Test

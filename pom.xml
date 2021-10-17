@@ -78,7 +78,7 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>${jupiter.version}</version>
-      <scope>test</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -166,6 +166,29 @@
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <excludes>**/test/**</excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>junit5</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>junit5</classifier>
+              <includes>**/test/**</includes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-install-plugin</artifactId>

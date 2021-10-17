@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;
 import org.microjpa.exception.InheritingNoRollbackApplicationException;
@@ -29,7 +30,9 @@ import org.microjpa.exception.RollbackApplicationException;
 import org.microjpa.exception.RollbackApplicationExceptionSubclass;
 import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService;
+import org.microjpa.test.CdiExtension;
 
+@ExtendWith(CdiExtension.class)
 public class ExceptionHandlingWithApplicationExceptionTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 

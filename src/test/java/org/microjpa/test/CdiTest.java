@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa;
+package org.microjpa.test;
+
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.microjpa.child.TransactionalChildRepository;
-import org.microjpa.parent.TransactionalParentRepository;
-import org.microjpa.relation.TransactionalRelationService;
-import org.microjpa.test.CdiExtension;
 
+@Retention(RUNTIME)
 @ExtendWith(CdiExtension.class)
-public class TransactionalPersistenceUnitTest
-    extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
+@Target({ANNOTATION_TYPE, TYPE, METHOD})
+public @interface CdiTest {
+
+    ContextScope cdiContext() default ContextScope.PER_TEST_METHOD;
+
+    enum ContextScope {
+        PER_TEST_CLASS,
+        PER_TEST_METHOD;
+    }
 }
+

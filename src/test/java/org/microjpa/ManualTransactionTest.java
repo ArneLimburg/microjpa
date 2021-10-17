@@ -24,11 +24,14 @@ import javax.persistence.RollbackException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.microjpa.child.ManualTransactionChildRepository;
 import org.microjpa.child.TestChild;
 import org.microjpa.parent.ManualTransactionParentRepository;
 import org.microjpa.relation.ManualTransactionRelationService;
+import org.microjpa.test.CdiExtension;
 
+@ExtendWith(CdiExtension.class)
 public class ManualTransactionTest extends
     AbstractPersistenceUnitTest<ManualTransactionRelationService, ManualTransactionParentRepository, ManualTransactionChildRepository> {
 

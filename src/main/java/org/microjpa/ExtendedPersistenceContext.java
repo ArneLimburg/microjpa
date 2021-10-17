@@ -17,6 +17,7 @@ package org.microjpa;
 
 import java.lang.annotation.Annotation;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
 import javax.enterprise.context.RequestScoped;
@@ -79,5 +80,9 @@ public class ExtendedPersistenceContext extends AbstractThreadLocalContext {
             deactivate();
             requestActive.remove();
         }
+    }
+
+    public void endApplication(@Observes @Destroyed(ApplicationScoped.class) Object event) {
+        deactivate();
     }
 }
