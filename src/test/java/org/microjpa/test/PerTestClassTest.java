@@ -16,6 +16,7 @@
 package org.microjpa.test;
 
 import static javax.persistence.PersistenceContextType.EXTENDED;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope.PER_TEST_CLASS;
 
@@ -34,6 +35,12 @@ public class PerTestClassTest {
 
     @PersistenceContext(unitName = "test-unit", type = EXTENDED)
     private EntityManager entityManager;
+    private EntityManager nonAnnotatedEntityManager;
+
+    @Test
+    public void nonAnnotatedEntityManagerIsNotInjected() {
+        assertNull(nonAnnotatedEntityManager);
+    }
 
     @Test
     public void createParentOne() {

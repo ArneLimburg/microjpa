@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ContextNotActiveException;
@@ -46,6 +47,8 @@ import javax.transaction.UserTransaction;
 
 @PersistenceScoped
 public class MicroTransaction implements UserTransaction, EntityTransaction, TransactionSynchronizationRegistry, Serializable {
+
+    private static final Logger LOG = Logger.getLogger(MicroTransaction.class.getName());
 
     @Inject
     private BeanManager beanManager;
@@ -79,6 +82,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         status = TransactionStatus.STATUS_ACTIVE;
         EntityManagerOperation beginTransaction = operation(em -> em.getTransaction().begin());
         getActiveEntityManagers().forEach(beginTransaction);
+        LOG.fine("Transaction started.");
         beginTransaction.checkForException();
     }
 
@@ -90,6 +94,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         getActiveEntityManagers().forEach(commitTransaction);
         status = TransactionStatus.STATUS_COMMITTED;
         end();
+        LOG.fine("Transaction committed.");
         commitTransaction.checkForException();
     }
 
@@ -101,6 +106,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         getActiveEntityManagers().forEach(rollbackTransaction);
         status = TransactionStatus.STATUS_ROLLEDBACK;
         end();
+        LOG.fine("Transaction rolled back.");
         rollbackTransaction.checkForException();
     }
 
@@ -114,6 +120,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
             .anyMatch(EntityTransaction::getRollbackOnly);
         if (rollbackOnly) {
             status = TransactionStatus.STATUS_MARKED_ROLLBACK;
+            LOG.fine("Transaction marked as rollback only.");
         }
         return rollbackOnly;
     }
@@ -123,6 +130,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         EntityManagerOperation setRollbackOnly = operation(em -> em.getTransaction().setRollbackOnly());
         getActiveEntityManagers().forEach(setRollbackOnly);
         status = TransactionStatus.STATUS_MARKED_ROLLBACK;
+        LOG.fine("Transaction marked as rollback only.");
         setRollbackOnly.checkForException();
     }
 

@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.ConversationScoped;
@@ -229,6 +230,7 @@ public class MicroJpaExtension implements Extension {
                 return entityManager;
             })
             .destroyWith((em, c) -> ofNullable(em).ifPresent(EntityManager::close)));
+        Logger.getLogger("org.microjpa.MicroJpa").info("MicroJPA started.");
     }
 
     private void overrideProperties(Map<String, Object> properties, BeanManager beanManager) {

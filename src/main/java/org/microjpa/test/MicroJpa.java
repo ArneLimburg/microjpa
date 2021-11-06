@@ -22,7 +22,9 @@ import java.lang.reflect.Field;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -31,13 +33,14 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.microjpa.ExtendedPersistenceContext;
 import org.microjpa.MicroJpaExtension.PersistenceContextLiteral;
+import org.microjpa.MicroJpaExtension.PersistenceUnitLiteral;
 import org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope;
 
 public class MicroJpa implements TestInstancePostProcessor, AfterAllCallback, AfterEachCallback, AfterTestExecutionCallback {
 
     @Override
     public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
-        injectEntityManager(testInstance, testInstance.getClass());
+        injectEntityManagerAndFactory(testInstance, testInstance.getClass());
     }
 
     @Override
@@ -61,17 +64,23 @@ public class MicroJpa implements TestInstancePostProcessor, AfterAllCallback, Af
         }
     }
 
-    private void injectEntityManager(Object testInstance, Class<? extends Object> type) throws ReflectiveOperationException {
+    private void injectEntityManagerAndFactory(Object testInstance, Class<? extends Object> type) throws ReflectiveOperationException {
         if (type == Object.class) {
             return;
         }
-        injectEntityManager(testInstance, type.getSuperclass());
+        injectEntityManagerAndFactory(testInstance, type.getSuperclass());
         for (Field field: type.getDeclaredFields()) {
             if (EntityManager.class == field.getType()) {
                 PersistenceContext context = field.getAnnotation(PersistenceContext.class);
                 if (context != null) {
                     field.setAccessible(true);
                     field.set(testInstance, CDI.current().select(EntityManager.class, new PersistenceContextLiteral(context)).get());
+                }
+            } else if (EntityManagerFactory.class == field.getType()) {
+                PersistenceUnit unit = field.getAnnotation(PersistenceUnit.class);
+                if (unit != null) {
+                    field.setAccessible(true);
+                    field.set(testInstance, CDI.current().select(EntityManagerFactory.class, new PersistenceUnitLiteral(unit)).get());
                 }
             }
         }
