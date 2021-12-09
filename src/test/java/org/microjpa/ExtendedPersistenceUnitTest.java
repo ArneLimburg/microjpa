@@ -15,13 +15,29 @@
  */
 package org.microjpa;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.microjpa.child.ExtendedChildRepository;
-import org.microjpa.parent.ExtendedParentRepository;
-import org.microjpa.relation.ExtendedRelationService;
-import org.microjpa.test.CdiExtension;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.microjpa.test.CdiTest.ContextScope.PER_TEST_CLASS;
 
-@ExtendWith(CdiExtension.class)
+import org.junit.jupiter.api.Test;
+import org.microjpa.child.ExtendedChildRepository;
+import org.microjpa.child.TestChild;
+import org.microjpa.parent.ExtendedParentRepository;
+import org.microjpa.parent.TestParent;
+import org.microjpa.relation.ExtendedRelationService;
+import org.microjpa.relation.Relation;
+import org.microjpa.test.CdiTest;
+import org.microjpa.test.MicroJpaTest;
+
+@CdiTest(cdiContext = PER_TEST_CLASS)
+@MicroJpaTest
 public class ExtendedPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
+
+    @Test
+    public void lazyLoadingAfterTransaction() {
+        Relation relation = testService.findParentAndChild(parentId);
+        testService.persist(new TestChild(new TestParent())); // any call in transaction
+
+        assertTrue(relation.getParent().getChildren().contains(relation.getChild()));
+    }
 }

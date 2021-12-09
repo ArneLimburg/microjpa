@@ -26,7 +26,6 @@ import javax.inject.Inject;
 import javax.persistence.PersistenceUnit;
 
 import org.apache.deltaspike.cdise.api.ContextControl;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,12 +57,6 @@ abstract class AbstractPersistenceUnitTest
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();
-        contextControl.stopContext(RequestScoped.class);
-        contextControl.startContext(RequestScoped.class);
-    }
-
-    @AfterEach
-    public void shutDownCdi() {
         contextControl.stopContext(RequestScoped.class);
     }
 

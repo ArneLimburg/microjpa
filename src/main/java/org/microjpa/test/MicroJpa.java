@@ -29,24 +29,64 @@ import javax.persistence.PersistenceUnit;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.microjpa.ExtendedPersistenceContext;
 import org.microjpa.MicroJpaExtension.PersistenceContextLiteral;
 import org.microjpa.MicroJpaExtension.PersistenceUnitLiteral;
 import org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope;
 
-public class MicroJpa implements TestInstancePostProcessor, AfterAllCallback, AfterEachCallback, AfterTestExecutionCallback {
+public class MicroJpa implements
+    TestInstancePostProcessor,
+    BeforeAllCallback,
+    AfterAllCallback,
+    BeforeEachCallback,
+    AfterEachCallback,
+    BeforeTestExecutionCallback,
+    AfterTestExecutionCallback {
+
+    private static final Namespace NAMESPACE = Namespace.create(MicroJpa.class.getName());
+    private static final Object FIRST_EXECUTION_KEY = new Object();
+
+    @Override
+    public void beforeAll(ExtensionContext context) throws Exception {
+        getContext().activate();
+    }
 
     @Override
     public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
         injectEntityManagerAndFactory(testInstance, testInstance.getClass());
+        if (getScope(context) != ExtendedPersistenceContextScope.PER_TEST_CLASS) {
+            getContext().deactivate();
+            getContext().activate();
+        }
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
+        context.getStore(NAMESPACE).put(FIRST_EXECUTION_KEY, true);
+    }
+
+    @Override
+    public void beforeTestExecution(ExtensionContext context) throws Exception {
+        Store store = context.getStore(NAMESPACE);
+        if (getScope(context) != ExtendedPersistenceContextScope.PER_TEST_CLASS && store.get(FIRST_EXECUTION_KEY, Boolean.class)) {
+            getContext().deactivate();
+            getContext().activate();
+            store.put(FIRST_EXECUTION_KEY, false);
+        }
     }
 
     @Override
     public void afterTestExecution(ExtensionContext context) throws Exception {
         if (getScope(context) == ExtendedPersistenceContextScope.PER_TEST_EXECUTION) {
             getContext().deactivate();
+            getContext().activate();
         }
     }
 

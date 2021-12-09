@@ -28,61 +28,82 @@ import javax.transaction.TransactionScoped;
 
 public class ExtendedPersistenceContext extends AbstractThreadLocalContext {
 
-    private ThreadLocal<Boolean> requestActive = new ThreadLocal<Boolean>();
-    private ThreadLocal<Boolean> transactionActive = new ThreadLocal<Boolean>();
+    private ThreadLocal<ActivationTrigger> activationTrigger = new ThreadLocal<ActivationTrigger>();
 
     @Override
     public Class<? extends Annotation> getScope() {
         return PersistenceScoped.class;
     }
-
     @Override
     public boolean isActive() {
         return true;
     }
 
     @Override
-    public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
-        if (!super.isActive()) {
-            activate();
-        }
-        if (requestActive.get() == null) {
-            requestActive.set(false);
-        }
-        try {
-            return super.get(contextual, creationalContext);
-        } finally {
-            if (Boolean.FALSE.equals(requestActive.get())) {
-                requestActive.remove();
-            }
+    public void activate() {
+        if (activationTrigger.get() == null) {
+            activationTrigger.set(ActivationTrigger.MANUALLY);
+            super.activate();
         }
     }
 
+    @Override
+    public void deactivate() {
+        super.deactivate();
+        activationTrigger.remove();
+    }
+
+    @Override
+    public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
+        if (activationTrigger.get() == ActivationTrigger.BY_MICRO_TRANSACTION && !isMicroTransaction(contextual)) {
+            activationTrigger.set(ActivationTrigger.AUTOMATICALLY);
+        } else if (activationTrigger.get() == null) {
+            if (isMicroTransaction(contextual)) {
+                activationTrigger.set(ActivationTrigger.BY_MICRO_TRANSACTION);
+            } else {
+                activationTrigger.set(ActivationTrigger.AUTOMATICALLY);
+            }
+            super.activate();
+        }
+        return super.get(contextual, creationalContext);
+    }
+
     public void beginRequest(@Observes @Initialized(RequestScoped.class) Object event) {
-        if (requestActive.get() == null) {
-            requestActive.set(true);
+        if (activationTrigger.get() == null) {
+            activationTrigger.set(ActivationTrigger.BY_REQUEST);
+            super.activate();
         }
     }
 
     public void beginTransaction(@Observes @Initialized(TransactionScoped.class) Object event) {
-        transactionActive.set(true);
+        if (activationTrigger.get() == null || activationTrigger.get() == ActivationTrigger.BY_MICRO_TRANSACTION) {
+            activationTrigger.set(ActivationTrigger.BY_TRANSACTION);
+            super.activate();
+        }
     }
 
     public void endTransaction(@Observes @Destroyed(TransactionScoped.class) Object event) {
-        transactionActive.remove();
-        if (!Boolean.TRUE.equals(requestActive.get())) {
+        if (activationTrigger.get() == ActivationTrigger.BY_TRANSACTION) {
             deactivate();
         }
     }
 
     public void endRequest(@Observes @Destroyed(RequestScoped.class) Object event) {
-        if (Boolean.TRUE.equals(requestActive.get())) {
+        if (activationTrigger.get() == ActivationTrigger.BY_REQUEST) {
             deactivate();
-            requestActive.remove();
         }
     }
 
     public void endApplication(@Observes @Destroyed(ApplicationScoped.class) Object event) {
         deactivate();
+    }
+
+    private boolean isMicroTransaction(Contextual<?> contextual) {
+        return contextual instanceof javax.enterprise.inject.spi.Bean
+            && ((javax.enterprise.inject.spi.Bean<?>)contextual).getBeanClass().equals(MicroTransaction.class);
+    }
+
+    private enum ActivationTrigger {
+      AUTOMATICALLY, MANUALLY, BY_REQUEST, BY_TRANSACTION, BY_MICRO_TRANSACTION
     }
 }
