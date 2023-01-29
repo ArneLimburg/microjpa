@@ -15,14 +15,14 @@ That may be the case in testing scenarios or with servers that do not implement 
 
 ## Latest Release
 
-Latest release version: `1.2.1`
+Latest release version: `1.2.4`
 
 To use it in a Maven project the following dependency should be added to the pom.xml:
 ```xml
 <dependency>
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>1.2.1</version>
+  <version>1.2.4</version>
 </dependency>
 ```
 
