@@ -31,6 +31,7 @@ import javax.transaction.Transactional;
 @Priority(LIBRARY_AFTER)
 public class RequiredTransactionInterceptor extends AbstractTransactionalInterceptor {
 
+    @Override
     @AroundInvoke
     public Object transactional(InvocationContext context) throws Exception {
         boolean beginInThisMethod = !isTransactionActive();

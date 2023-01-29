@@ -29,7 +29,7 @@ import org.microjpa.event.EventConsumer;
 import org.microjpa.event.EventProducer;
 import org.microjpa.event.SomeEvent;
 
-public class TransactionalEventingTest {
+class TransactionalEventingTest {
 
     private SeContainer cdiContainer;
     private EventProducer producer;

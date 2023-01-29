@@ -82,17 +82,17 @@ public class TransactionalEventDecorator<T> implements Event<T>, Serializable {
 
     @Override
     public Event<T> select(Annotation... qualifiers) {
-        return new TransactionalEventDecorator<T>(delegate.select(qualifiers), transactionContext, registry, extendedContext);
+        return new TransactionalEventDecorator<>(delegate.select(qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
     public <U extends T> Event<U> select(Class<U> subtype, Annotation... qualifiers) {
-        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
+        return new TransactionalEventDecorator<>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
     public <U extends T> Event<U> select(TypeLiteral<U> subtype, Annotation... qualifiers) {
-        return new TransactionalEventDecorator<U>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
+        return new TransactionalEventDecorator<>(delegate.select(subtype, qualifiers), transactionContext, registry, extendedContext);
     }
 
     @Override
@@ -106,8 +106,6 @@ public class TransactionalEventDecorator<T> implements Event<T>, Serializable {
     }
 
     private <U> BiConsumer<U, Throwable> deactivateExtendedContext() {
-        return (result, exception) -> {
-            extendedContext.deactivate();
-        };
+        return (result, exception) -> extendedContext.deactivate();
     }
 }

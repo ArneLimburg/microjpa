@@ -24,7 +24,7 @@ import org.apache.meecrowave.testing.ConfigurationInject;
 import org.junit.jupiter.api.BeforeEach;
 
 @MeecrowaveConfig
-public class MeecrowaveRequestScopedTest extends AbstractRequestScopedTest {
+class MeecrowaveRequestScopedTest extends AbstractRequestScopedTest {
 
     @ConfigurationInject
     private Meecrowave.Builder config;

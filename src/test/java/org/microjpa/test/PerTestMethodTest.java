@@ -29,7 +29,7 @@ import org.microjpa.parent.TestParent;
 
 @CdiTest(cdiContext = PER_TEST_CLASS)
 @MicroJpaTest(extendedPersistenceContext = PER_TEST_METHOD)
-public class PerTestMethodTest {
+class PerTestMethodTest {
 
     private boolean firstExecution = true;
     private static TestParent parent;

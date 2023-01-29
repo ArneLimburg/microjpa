@@ -28,7 +28,7 @@ import org.microjpa.parent.TestParent;
 
 @CdiTest(cdiContext = PER_TEST_CLASS)
 @ExtendWith(MicroJpa.class) // default is PER_TEST_EXECUTION
-public class PerTestExecutionTest {
+class PerTestExecutionTest {
 
     private static TestParent parent;
 

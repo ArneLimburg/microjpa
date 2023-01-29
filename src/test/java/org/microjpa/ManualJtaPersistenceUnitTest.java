@@ -34,7 +34,7 @@ import org.microjpa.test.CdiExtension;
 
 @ExtendWith(CdiExtension.class)
 @PersistenceUnits(@PersistenceUnit(unitName = "jta-unit"))
-public class ManualJtaPersistenceUnitTest
+class ManualJtaPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualJtaRelationService, ManualJtaParentRepository, ManualJtaChildRepository> {
 
     @Test

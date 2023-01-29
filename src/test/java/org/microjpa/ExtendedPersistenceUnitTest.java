@@ -30,7 +30,7 @@ import org.microjpa.test.MicroJpaTest;
 
 @CdiTest(cdiContext = PER_TEST_CLASS)
 @MicroJpaTest
-public class ExtendedPersistenceUnitTest
+class ExtendedPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ExtendedRelationService, ExtendedParentRepository, ExtendedChildRepository> {
 
     @Test

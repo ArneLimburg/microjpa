@@ -150,6 +150,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
             super(transactional);
         }
 
+        @Override
         public void checkRollback(Exception e) {
             Optional<ApplicationException> annotation = ofNullable(e.getClass().getAnnotation(ApplicationException.class));
             if (annotation.isPresent()) {
@@ -161,6 +162,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
             }
         }
 
+        @Override
         protected void checkInheritedRollback(Class<?> exceptionType) {
             if (shouldNotRollback(exceptionType)) {
                 // don't roll back

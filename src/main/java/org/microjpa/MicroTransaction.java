@@ -17,7 +17,6 @@ package org.microjpa;
 
 import static java.util.Optional.ofNullable;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
 @PersistenceScoped
-public class MicroTransaction implements UserTransaction, EntityTransaction, TransactionSynchronizationRegistry, Serializable {
+public class MicroTransaction implements UserTransaction, EntityTransaction, TransactionSynchronizationRegistry {
 
     private static final Logger LOG = Logger.getLogger(MicroTransaction.class.getName());
 
@@ -162,7 +161,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     @Override
     public void putResource(Object key, Object value) {
         if (transactionResources == null) {
-            transactionResources = new HashMap<Object, Object>();
+            transactionResources = new HashMap<>();
         }
         transactionResources.put(key, value);
     }
