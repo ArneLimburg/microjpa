@@ -28,12 +28,13 @@ import javax.transaction.TransactionScoped;
 
 public class ExtendedPersistenceContext extends AbstractThreadLocalContext {
 
-    private ThreadLocal<ActivationTrigger> activationTrigger = new ThreadLocal<ActivationTrigger>();
+    private ThreadLocal<ActivationTrigger> activationTrigger = new ThreadLocal<>();
 
     @Override
     public Class<? extends Annotation> getScope() {
         return PersistenceScoped.class;
     }
+
     @Override
     public boolean isActive() {
         return true;

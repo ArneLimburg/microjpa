@@ -22,6 +22,6 @@ import org.microjpa.relation.NonTransactionalRelationServiceSubclass;
 import org.microjpa.test.CdiExtension;
 
 @ExtendWith(CdiExtension.class)
-public class TransactionalSuperclassTest extends AbstractPersistenceUnitTest
+class TransactionalSuperclassTest extends AbstractPersistenceUnitTest
     <NonTransactionalRelationServiceSubclass, TransactionalParentRepository, TransactionalChildRepository> {
 }

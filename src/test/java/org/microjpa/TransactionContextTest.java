@@ -40,7 +40,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class TransactionContextTest {
+class TransactionContextTest {
 
     private static SeContainer cdiContainer;
     private static Bean<TransactionScopedTestBean> testBean;

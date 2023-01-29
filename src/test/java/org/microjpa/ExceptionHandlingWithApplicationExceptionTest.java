@@ -33,7 +33,7 @@ import org.microjpa.relation.TransactionalRelationService;
 import org.microjpa.test.CdiExtension;
 
 @ExtendWith(CdiExtension.class)
-public class ExceptionHandlingWithApplicationExceptionTest
+class ExceptionHandlingWithApplicationExceptionTest
     extends AbstractPersistenceUnitTest<TransactionalRelationService, TransactionalParentRepository, TransactionalChildRepository> {
 
     @Test

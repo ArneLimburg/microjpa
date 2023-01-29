@@ -28,7 +28,7 @@ import org.microjpa.relation.Relation;
 import org.microjpa.test.CdiExtension;
 
 @ExtendWith(CdiExtension.class)
-public class ManualPersistenceUnitTest
+class ManualPersistenceUnitTest
     extends AbstractPersistenceUnitTest<ManualRelationService, ManualParentRepository, ManualChildRepository> {
 
     @Test

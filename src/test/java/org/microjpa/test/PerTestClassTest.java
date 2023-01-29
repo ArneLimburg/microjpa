@@ -29,7 +29,7 @@ import org.microjpa.test.CdiTest.ContextScope;
 
 @CdiTest(cdiContext = ContextScope.PER_TEST_CLASS)
 @MicroJpaTest(extendedPersistenceContext = PER_TEST_CLASS)
-public class PerTestClassTest {
+class PerTestClassTest {
 
     private static TestParent parent;
 

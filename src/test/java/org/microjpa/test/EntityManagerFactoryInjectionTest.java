@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 @CdiTest(cdiContext = PER_TEST_CLASS)
 @MicroJpaTest(extendedPersistenceContext = PER_TEST_METHOD)
-public class EntityManagerFactoryInjectionTest {
+class EntityManagerFactoryInjectionTest {
 
     @PersistenceUnit(unitName = "test-unit")
     private EntityManagerFactory annotatedFactory;

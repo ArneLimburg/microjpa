@@ -111,7 +111,7 @@ public class MicroJpaExtension implements Extension {
         annotatedType.getMethods().stream()
             .map(method -> ofNullable(method.getAnnotation(PersistenceContext.class)))
             .filter(Optional::isPresent).map(Optional::get)
-            .forEach(persistenceContext -> addPersistenceContext(persistenceContext));
+            .forEach(this::addPersistenceContext);
         ofNullable(annotatedType.getAnnotation(PersistenceUnit.class)).ifPresent(this::initPersistenceProperties);
         ofNullable(annotatedType.getAnnotation(PersistenceContext.class)).ifPresent(this::addPersistenceContext);
         ofNullable(annotatedType.getAnnotation(PersistenceUnits.class))
@@ -125,8 +125,8 @@ public class MicroJpaExtension implements Extension {
             TransactionPhase transactionPhase = observerMethodEvent.getObserverMethod().getTransactionPhase();
             switch (transactionPhase) {
                 case IN_PROGRESS:
-                    if (!observerMethodEvent.getObserverMethod().getObservedQualifiers().stream()
-                        .anyMatch(a -> isInitializedOrDestroyedDefaultScopeQualifier(a))) {
+                    if (observerMethodEvent.getObserverMethod().getObservedQualifiers().stream()
+                        .noneMatch(this::isInitializedOrDestroyedDefaultScopeQualifier)) {
 
                         observerMethodEvent.configureObserverMethod()
                             .addQualifier(new InProgress.Literal())

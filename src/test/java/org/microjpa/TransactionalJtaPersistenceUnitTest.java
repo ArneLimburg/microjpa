@@ -37,6 +37,6 @@ import org.microjpa.test.CdiExtension;
     @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
 })
 @ExtendWith(CdiExtension.class)
-public class TransactionalJtaPersistenceUnitTest extends AbstractPersistenceUnitTest
+class TransactionalJtaPersistenceUnitTest extends AbstractPersistenceUnitTest
     <TransactionalJtaRelationService, TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
 }

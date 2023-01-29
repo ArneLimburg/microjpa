@@ -31,7 +31,7 @@ public abstract class AbstractThreadLocalContext implements AlterableContext {
 
     public void activate() {
         if (beans.get() == null) {
-            beans.set(new HashMap<Contextual, Bean>());
+            beans.set(new HashMap<>());
         }
     }
 

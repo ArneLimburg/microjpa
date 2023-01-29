@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.junit.jupiter.api.Test;
 
-public abstract class AbstractRequestScopedTest {
+abstract class AbstractRequestScopedTest {
 
     private URL url;
 

@@ -42,7 +42,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 
-public class WeldRequestScopedTest extends AbstractRequestScopedTest {
+class WeldRequestScopedTest extends AbstractRequestScopedTest {
 
     private Undertow server;
     private SeContainer container;
