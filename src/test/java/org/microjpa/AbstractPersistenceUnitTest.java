@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Arne Limburg
+ * Copyright 2020 - 2024 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.lang.reflect.ParameterizedType;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
-import javax.persistence.PersistenceUnit;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceUnit;
 
-import org.apache.deltaspike.cdise.api.ContextControl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ abstract class AbstractPersistenceUnitTest
     <S extends AbstractRelationService<P, C>, P extends AbstractParentRepository, C extends AbstractChildRepository> {
 
     @Inject
-    private ContextControl contextControl;
+    private RequestContextController contextControl;
 
     protected S testService;
     protected C testChildRepository;
@@ -49,7 +48,7 @@ abstract class AbstractPersistenceUnitTest
 
     @BeforeEach
     public void startCdi() {
-        contextControl.startContext(RequestScoped.class);
+        contextControl.activate();
 
         ParameterizedType genericSuperclass = (ParameterizedType)getClass().getGenericSuperclass();
         testService = CDI.current().select((Class<S>)genericSuperclass.getActualTypeArguments()[0]).get();
@@ -57,7 +56,7 @@ abstract class AbstractPersistenceUnitTest
         TestChild testChild = new TestChild(new TestParent());
         testService.persist(testChild);
         parentId = testChild.getParent().getId();
-        contextControl.stopContext(RequestScoped.class);
+        contextControl.deactivate();
     }
 
     @Test
