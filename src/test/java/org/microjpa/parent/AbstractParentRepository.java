@@ -15,7 +15,7 @@
  */
 package org.microjpa.parent;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public abstract class AbstractParentRepository {
 

@@ -17,9 +17,9 @@ package org.microjpa.child;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.transaction.Transactional;
 
 public abstract class AbstractChildRepository {
 

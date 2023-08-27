@@ -17,7 +17,7 @@ package org.microjpa;
 
 import java.lang.annotation.Annotation;
 
-import javax.transaction.TransactionScoped;
+import jakarta.transaction.TransactionScoped;
 
 public class TransactionContext extends AbstractThreadLocalContext {
 

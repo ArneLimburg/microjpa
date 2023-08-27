@@ -15,8 +15,8 @@
  */
 package org.microjpa.relation;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 
 import org.microjpa.child.TransactionalJtaChildRepository;
 import org.microjpa.parent.TransactionalJtaParentRepository;

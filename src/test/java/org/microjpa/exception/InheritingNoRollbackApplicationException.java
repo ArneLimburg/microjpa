@@ -15,7 +15,7 @@
  */
 package org.microjpa.exception;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 @ApplicationException(rollback = false, inherited = true)
 public class InheritingNoRollbackApplicationException extends RuntimeException {

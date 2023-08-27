@@ -15,8 +15,8 @@
  */
 package org.microjpa.relation;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Typed;
 
 @ApplicationScoped
 @Typed(NonTransactionalRelationServiceSubclass.class)

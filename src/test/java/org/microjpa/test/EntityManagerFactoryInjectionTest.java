@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.microjpa.test.CdiTest.ContextScope.PER_TEST_CLASS;
 import static org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope.PER_TEST_METHOD;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 
 import org.junit.jupiter.api.Test;
 

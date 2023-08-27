@@ -17,9 +17,10 @@ package org.microjpa.child;
 
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.microjpa.TransactionContext;
 
@@ -28,7 +29,7 @@ public class ManualTransactionChildRepository extends AbstractChildRepository {
     @PersistenceContext(unitName = "test-unit")
     private EntityManager entityManager;
     @Inject
-    private TransactionContext transactionContext;
+    private Provider<TransactionContext> transactionContext;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -41,11 +42,12 @@ public class ManualTransactionChildRepository extends AbstractChildRepository {
     }
 
     public List<TestChild> findAll() {
-        transactionContext.activate();
+        TransactionContext context = transactionContext.get();
+        context.activate();
         try {
             return super.findAll();
         } finally {
-            transactionContext.deactivate();
+            context.deactivate();
         }
     }
 

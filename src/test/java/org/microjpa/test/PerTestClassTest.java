@@ -15,13 +15,13 @@
  */
 package org.microjpa.test;
 
-import static javax.persistence.PersistenceContextType.EXTENDED;
+import static jakarta.persistence.PersistenceContextType.EXTENDED;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope.PER_TEST_CLASS;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.junit.jupiter.api.Test;
 import org.microjpa.parent.TestParent;

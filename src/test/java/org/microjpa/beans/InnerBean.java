@@ -15,13 +15,13 @@
  */
 package org.microjpa.beans;
 
-import static javax.persistence.PersistenceContextType.EXTENDED;
+import static jakarta.persistence.PersistenceContextType.EXTENDED;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 @ApplicationScoped
 @Transactional(TxType.NEVER) // overridden by method level annotations

@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.enterprise.context.spi.AlterableContext;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.AlterableContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 public abstract class AbstractThreadLocalContext implements AlterableContext {
 

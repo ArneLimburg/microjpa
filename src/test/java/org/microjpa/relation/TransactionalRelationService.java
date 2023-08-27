@@ -17,8 +17,8 @@ package org.microjpa.relation;
 
 import java.io.IOException;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 
 import org.microjpa.child.TestChild;
 import org.microjpa.child.TransactionalChildRepository;

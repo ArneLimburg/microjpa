@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.servlet.ServletException;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
+import jakarta.servlet.ServletException;
 
 import org.jboss.resteasy.plugins.servlet.ResteasyServletInitializer;
 import org.jboss.weld.environment.servlet.Listener;

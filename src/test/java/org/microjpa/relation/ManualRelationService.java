@@ -15,7 +15,7 @@
  */
 package org.microjpa.relation;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import org.microjpa.child.ManualChildRepository;
 import org.microjpa.parent.ManualParentRepository;

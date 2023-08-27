@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
-import javax.persistence.RollbackException;
+import jakarta.persistence.RollbackException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

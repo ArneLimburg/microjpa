@@ -15,11 +15,11 @@
  */
 package org.microjpa.child;
 
-import static javax.persistence.PersistenceContextType.EXTENDED;
+import static jakarta.persistence.PersistenceContextType.EXTENDED;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @ApplicationScoped
 public class ExtendedChildRepository extends AbstractChildRepository {

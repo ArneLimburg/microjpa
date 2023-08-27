@@ -15,15 +15,15 @@
  */
 package org.microjpa;
 
-import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
-import static javax.transaction.Transactional.TxType.SUPPORTS;
+import static jakarta.interceptor.Interceptor.Priority.LIBRARY_AFTER;
+import static jakarta.transaction.Transactional.TxType.SUPPORTS;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.Dependent;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.Transactional;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.Transactional;
 
 @Dependent
 @Transactional(SUPPORTS)
