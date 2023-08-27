@@ -27,6 +27,7 @@
       <property
         name="hibernate.jpa.compliance.transaction"
         value="true" />
+      <property name="hibernate.show_sql" value="true"/>
     </properties>
   </persistence-unit>
   <persistence-unit

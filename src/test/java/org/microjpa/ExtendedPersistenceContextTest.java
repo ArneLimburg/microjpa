@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2021 Arne Limburg
+ * Copyright 2020 - 2024 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import java.io.Serializable;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.inject.Inject;
-import javax.transaction.SystemException;
-import javax.transaction.Transactional;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
+import jakarta.inject.Inject;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +42,8 @@ class ExtendedPersistenceContextTest {
     @BeforeEach
     public void loadTransactionContext() {
         cdiContainer = SeContainerInitializer.newInstance().initialize();
+        ExtendedPersistenceContext persistenceContext = cdiContainer.select(ExtendedPersistenceContext.class).get();
+        persistenceContext.deactivate();
     }
 
     @AfterEach

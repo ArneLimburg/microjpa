@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2024 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.microjpa.relation;
+package org.microjpa.tags;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.TYPE;
 
-import org.microjpa.child.TransactionalJtaChildRepository;
-import org.microjpa.parent.TransactionalJtaParentRepository;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Transactional
-@ApplicationScoped
-public class TransactionalJtaRelationService
-    extends AbstractRelationService<TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
+import org.junit.jupiter.api.Tag;
+
+@Tag("web")
+@Target({ANNOTATION_TYPE, TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface WebTest {
 }
