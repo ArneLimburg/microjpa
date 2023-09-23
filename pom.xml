@@ -375,19 +375,6 @@
         </dependency>
         <dependency>
           <groupId>org.apache.meecrowave</groupId>
-          <artifactId>meecrowave-core</artifactId>
-          <version>1.2.11</version>
-          <classifier>jakarta</classifier>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.meecrowave</groupId>
-              <artifactId>meecrowave-specs-api</artifactId>            
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.meecrowave</groupId>
           <artifactId>meecrowave-junit</artifactId>
           <version>1.2.11</version>
           <classifier>jakarta</classifier>
@@ -425,6 +412,16 @@
                 </goals>
                 <configuration>
                   <artifactItems>
+                    <artifactItem>
+                      <groupId>org.apache.meecrowave</groupId>
+                      <artifactId>meecrowave-core</artifactId>           
+                      <classifier>jakarta</classifier> 
+                      <version>1.2.11</version>
+                      <type>jar</type>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>target/test-classes</outputDirectory>
+                      <excludes>org/apache/logging/log4j/core/config/plugins/processor/PluginProcessor.class</excludes>
+                    </artifactItem>
                     <artifactItem>
                       <groupId>org.apache.meecrowave</groupId>
                       <artifactId>meecrowave-core</artifactId>            
