@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 Arne Limburg
+ * Copyright 2021 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.microjpa;
 
-import static jakarta.interceptor.Interceptor.Priority.LIBRARY_AFTER;
 import static jakarta.transaction.Transactional.TxType.REQUIRES_NEW;
+import static org.microjpa.AbstractTransactionalInterceptor.TRANSACTIONAL_INTERCEPTOR_PRIORITY;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.Dependent;
@@ -28,7 +28,7 @@ import jakarta.transaction.Transactional;
 @Dependent
 @Transactional(REQUIRES_NEW)
 @Interceptor
-@Priority(LIBRARY_AFTER)
+@Priority(TRANSACTIONAL_INTERCEPTOR_PRIORITY)
 public class RequiresNewTransactionInterceptor extends AbstractTransactionalInterceptor {
 
     @Override
