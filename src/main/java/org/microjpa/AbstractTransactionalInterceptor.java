@@ -18,9 +18,11 @@ package org.microjpa;
 import static java.util.Optional.ofNullable;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 import jakarta.ejb.ApplicationException;
+import jakarta.enterprise.inject.Stereotype;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.interceptor.InvocationContext;
@@ -79,6 +81,15 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
         Class<?> type = context.getTarget().getClass();
         do {
             transactional = type.getAnnotation(Transactional.class);
+            if (transactional == null) {
+                for (Annotation annotation: type.getAnnotations()) {
+                    Class<? extends Annotation> annotationType = annotation.annotationType();
+                    if (annotationType.isAnnotationPresent(Stereotype.class) && annotationType.isAnnotationPresent(Transactional.class)) {
+                        transactional = annotationType.getAnnotation(Transactional.class);
+                        break;
+                    }
+                }
+            }
             type = type.getSuperclass();
         } while (transactional == null);
         return transactional;
