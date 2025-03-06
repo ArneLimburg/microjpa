@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,14 @@ import jakarta.ejb.ApplicationException;
 import jakarta.enterprise.inject.Stereotype;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.persistence.EntityTransaction;
 import jakarta.transaction.Transactional;
 
 public abstract class AbstractTransactionalInterceptor implements Serializable {
+
+    public static final int TRANSACTIONAL_INTERCEPTOR_PRIORITY = Interceptor.Priority.PLATFORM_BEFORE + 200;
 
     private static final boolean APPLICATION_EXCEPTION_AVAILABLE;
     static {
