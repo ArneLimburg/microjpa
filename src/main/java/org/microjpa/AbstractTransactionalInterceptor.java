@@ -18,9 +18,11 @@ package org.microjpa;
 import static java.util.Optional.ofNullable;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 
 import jakarta.ejb.ApplicationException;
+import jakarta.enterprise.inject.Stereotype;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.interceptor.InvocationContext;
@@ -76,12 +78,21 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
         if (transactional != null) {
             return transactional;
         }
-        Class<?> type = context.getTarget().getClass();
-        do {
-            transactional = type.getAnnotation(Transactional.class);
-            type = type.getSuperclass();
-        } while (transactional == null);
-        return transactional;
+        Class<? extends Object> type = context.getTarget().getClass();
+        transactional = type.getAnnotation(Transactional.class);
+        if (transactional != null) {
+            return transactional;
+        }
+        for (Annotation annotation: type.getAnnotations()) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (annotationType.isAnnotationPresent(Stereotype.class)) {
+                if (annotationType.isAnnotationPresent(Transactional.class)) {
+                    return annotationType.getAnnotation(Transactional.class);
+                }
+            }
+            // Fixme: Handle stereotypes with additional stereotypes correctly
+        }
+        throw new IllegalStateException("No @Transactional annotation found.");
     }
 
     private void checkRollback(Transactional transactional, Exception exception) {

@@ -32,4 +32,3 @@ jobs:
       - id: owb-test
         name: Test with OpenWebBeans
         run: mvn package
-
