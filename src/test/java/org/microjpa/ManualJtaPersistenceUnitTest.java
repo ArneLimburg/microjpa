@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package org.microjpa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceProperty;
-import jakarta.persistence.PersistenceUnit;
-import jakarta.persistence.PersistenceUnits;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceProperty;
+import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceUnits;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,13 +40,13 @@ class ManualJtaPersistenceUnitTest
     @Test
     @DisplayName("found parent's id equals parent's id of found child but they are not same (different EntityManagers are used)")
     @PersistenceContext(unitName = "jta-unit", properties = {
-        @PersistenceProperty(name = "jakarta.persistence.transactionType", value = "RESOURCE_LOCAL"),
-        @PersistenceProperty(name = "jakarta.persistence.jtaDataSource", value = ""),
-        @PersistenceProperty(name = "jakarta.persistence.jdbc.driver", value = "org.h2.Driver"),
-        @PersistenceProperty(name = "jakarta.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
-        @PersistenceProperty(name = "jakarta.persistence.jdbc.user", value = "sa"),
-        @PersistenceProperty(name = "jakarta.persistence.jdbc.password", value = ""),
-        @PersistenceProperty(name = "jakarta.persistence.schema-generation.database.action", value = "drop-and-create")
+        @PersistenceProperty(name = "javax.persistence.transactionType", value = "RESOURCE_LOCAL"),
+        @PersistenceProperty(name = "javax.persistence.jtaDataSource", value = ""),
+        @PersistenceProperty(name = "javax.persistence.jdbc.driver", value = "org.h2.Driver"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.url", value = "jdbc:h2:mem:test"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.user", value = "sa"),
+        @PersistenceProperty(name = "javax.persistence.jdbc.password", value = ""),
+        @PersistenceProperty(name = "javax.persistence.schema-generation.database.action", value = "drop-and-create")
     })
     public void find() {
 

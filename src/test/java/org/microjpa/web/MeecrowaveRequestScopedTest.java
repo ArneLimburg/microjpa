@@ -15,14 +15,23 @@
  */
 package org.microjpa.web;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
+import java.io.IOException;
+import java.net.URL;
 
-@ApplicationScoped
-public class TransactionTemplate {
+import org.apache.meecrowave.Meecrowave;
+import org.apache.meecrowave.junit5.MeecrowaveConfig;
+import org.apache.meecrowave.testing.ConfigurationInject;
+import org.junit.jupiter.api.BeforeEach;
 
-    @Transactional
-    public void runInTransaction(Runnable runnable) {
-        runnable.run();
+@MeecrowaveConfig
+class MeecrowaveRequestScopedTest extends AbstractRequestScopedTest {
+
+    @ConfigurationInject
+    private Meecrowave.Builder config;
+
+    @BeforeEach
+    public void initialize() throws IOException {
+        URL baseUrl = new URL("http://localhost:" + config.getHttpPort() + "/test-parent");
+        super.initialize(baseUrl);
     }
 }
