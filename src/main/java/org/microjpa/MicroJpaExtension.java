@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 - 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
-import static jakarta.persistence.PersistenceContextType.TRANSACTION;
+import static javax.persistence.PersistenceContextType.TRANSACTION;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -33,44 +33,43 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.ConversationScoped;
-import jakarta.enterprise.context.Destroyed;
-import jakarta.enterprise.context.Initialized;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.event.TransactionPhase;
-import jakarta.enterprise.inject.Default;
-import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
-import jakarta.enterprise.inject.spi.AnnotatedField;
-import jakarta.enterprise.inject.spi.AnnotatedType;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-import jakarta.enterprise.inject.spi.CDI;
-import jakarta.enterprise.inject.spi.Extension;
-import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
-import jakarta.enterprise.inject.spi.ProcessObserverMethod;
-import jakarta.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
-import jakarta.enterprise.util.AnnotationLiteral;
-import jakarta.enterprise.util.Nonbinding;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceContextType;
-import jakarta.persistence.PersistenceContexts;
-import jakarta.persistence.PersistenceProperty;
-import jakarta.persistence.PersistenceUnit;
-import jakarta.persistence.PersistenceUnits;
-import jakarta.persistence.SynchronizationType;
-import jakarta.transaction.TransactionScoped;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.enterprise.event.Observes;
+import javax.enterprise.event.TransactionPhase;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.ProcessObserverMethod;
+import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.enterprise.util.Nonbinding;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceContexts;
+import javax.persistence.PersistenceProperty;
+import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceUnits;
+import javax.persistence.SynchronizationType;
+import javax.transaction.TransactionScoped;
 
 public class MicroJpaExtension implements Extension {
 
-    private static final String JTA_DATA_SOURCE_PROPERTY = "jakarta.persistence.jtaDataSource";
-    private static final String BEAN_MANAGER_PROPERTY = "jakarta.persistence.bean.manager";
+    private static final String JTA_DATA_SOURCE_PROPERTY = "javax.persistence.jtaDataSource";
+    private static final String BEAN_MANAGER_PROPERTY = "javax.persistence.bean.manager";
     private static final PersistenceProperty[] EMPTY_PERSISTENCE_PROPERTIES = new PersistenceProperty[0];
     private static final String NAME = "name";
     private static final List<String> NONBINDING_PROPERTIES = unmodifiableList(asList(NAME, "properties"));
@@ -175,13 +174,11 @@ public class MicroJpaExtension implements Extension {
         event.addBean()
             .scope(ApplicationScoped.class)
             .addType(TransactionContext.class)
-            .addQualifier(new Default.Literal())
             .createWith(c -> transactionContext);
         event.addContext(transactionContext);
         event.addBean()
             .scope(ApplicationScoped.class)
             .addType(ExtendedPersistenceContext.class)
-            .addQualifier(new Default.Literal())
             .createWith(c -> extendedPersistenceContext);
         event.addObserverMethod()
             .beanClass(ExtendedPersistenceContext.class)

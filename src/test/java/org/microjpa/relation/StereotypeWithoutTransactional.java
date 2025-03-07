@@ -19,8 +19,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Stereotype;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Stereotype;
 
 @Stereotype
 @ApplicationScoped

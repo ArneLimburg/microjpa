@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
  */
 package org.microjpa.event;
 
-import static jakarta.enterprise.event.TransactionPhase.AFTER_COMPLETION;
-import static jakarta.enterprise.event.TransactionPhase.AFTER_FAILURE;
-import static jakarta.enterprise.event.TransactionPhase.AFTER_SUCCESS;
-import static jakarta.enterprise.event.TransactionPhase.BEFORE_COMPLETION;
-import static jakarta.enterprise.event.TransactionPhase.IN_PROGRESS;
+import static javax.enterprise.event.TransactionPhase.AFTER_COMPLETION;
+import static javax.enterprise.event.TransactionPhase.AFTER_FAILURE;
+import static javax.enterprise.event.TransactionPhase.AFTER_SUCCESS;
+import static javax.enterprise.event.TransactionPhase.BEFORE_COMPLETION;
+import static javax.enterprise.event.TransactionPhase.IN_PROGRESS;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.event.ObservesAsync;
-import jakarta.enterprise.inject.Default;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import javax.enterprise.event.ObservesAsync;
+import javax.enterprise.inject.Default;
 
 @ApplicationScoped
 public class EventConsumer {

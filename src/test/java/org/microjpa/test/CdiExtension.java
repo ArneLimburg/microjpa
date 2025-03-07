@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ package org.microjpa.test;
 import static java.util.Optional.ofNullable;
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
-import jakarta.enterprise.context.spi.CreationalContext;
-import jakarta.enterprise.inject.se.SeContainer;
-import jakarta.enterprise.inject.se.SeContainerInitializer;
-import jakarta.enterprise.inject.spi.AnnotatedType;
-import jakarta.enterprise.inject.spi.Bean;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.InjectionTarget;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -54,8 +53,7 @@ public class CdiExtension implements BeforeAllCallback, TestInstancePostProcesso
         }
         BeanManager beanManager = cdiContainer.getBeanManager();
         AnnotatedType<Object> annotatedType = beanManager.createAnnotatedType((Class<Object>)testInstance.getClass());
-        Bean<?> bean = beanManager.resolve(beanManager.getBeans(testInstance.getClass()));
-        injectionTarget = beanManager.getInjectionTargetFactory(annotatedType).createInjectionTarget((Bean<Object>)bean);
+        injectionTarget = beanManager.createInjectionTarget(annotatedType);
         CreationalContext<Object> creationalContext = beanManager.createCreationalContext(null);
         injectionTarget.inject(testInstance, creationalContext);
         injectionTarget.postConstruct(testInstance);

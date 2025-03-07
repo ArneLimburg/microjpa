@@ -15,8 +15,8 @@
  */
 package org.microjpa.relation;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Typed;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Typed;
 
 @ApplicationScoped
 @Typed(TransactionalStereotypeRelationServiceSubclass.class)

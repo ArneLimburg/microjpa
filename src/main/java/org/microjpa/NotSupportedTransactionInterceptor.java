@@ -15,15 +15,15 @@
  */
 package org.microjpa;
 
-import static jakarta.transaction.Transactional.TxType.NOT_SUPPORTED;
+import static javax.transaction.Transactional.TxType.NOT_SUPPORTED;
 import static org.microjpa.AbstractTransactionalInterceptor.TRANSACTIONAL_INTERCEPTOR_PRIORITY;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.Dependent;
-import jakarta.interceptor.AroundInvoke;
-import jakarta.interceptor.Interceptor;
-import jakarta.interceptor.InvocationContext;
-import jakarta.transaction.Transactional;
+import javax.annotation.Priority;
+import javax.enterprise.context.Dependent;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import javax.transaction.Transactional;
 
 @Dependent
 @Transactional(NOT_SUPPORTED)

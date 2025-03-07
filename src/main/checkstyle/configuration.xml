@@ -61,7 +61,7 @@
     <module name="ImportOrder">
       <property
         name="groups"
-        value="java,javax,jakarta,org,com" />
+        value="java,javax,org,com" />
       <property
         name="separated"
         value="true" />

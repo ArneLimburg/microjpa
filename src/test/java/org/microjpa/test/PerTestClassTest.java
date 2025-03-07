@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 Arne Limburg
+ * Copyright 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package org.microjpa.test;
 
-import static jakarta.persistence.PersistenceContextType.EXTENDED;
+import static javax.persistence.PersistenceContextType.EXTENDED;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope.PER_TEST_CLASS;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.junit.jupiter.api.Test;
 import org.microjpa.parent.TestParent;

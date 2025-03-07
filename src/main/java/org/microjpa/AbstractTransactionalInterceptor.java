@@ -21,14 +21,13 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import jakarta.ejb.ApplicationException;
-import jakarta.enterprise.inject.Stereotype;
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
-import jakarta.interceptor.Interceptor;
-import jakarta.interceptor.InvocationContext;
-import jakarta.persistence.EntityTransaction;
-import jakarta.transaction.Transactional;
+import javax.ejb.ApplicationException;
+import javax.enterprise.inject.Stereotype;
+import javax.inject.Inject;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import javax.persistence.EntityTransaction;
+import javax.transaction.Transactional;
 
 public abstract class AbstractTransactionalInterceptor implements Serializable {
 
@@ -38,7 +37,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
     static {
         boolean applicationExceptionAvailable = true;
         try {
-            Class.forName("jakarta.ejb.ApplicationException");
+            Class.forName("javax.ejb.ApplicationException");
         } catch (ClassNotFoundException e) {
             applicationExceptionAvailable = false;
         }
@@ -47,7 +46,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
     private static final Class[] ROLLBACK_ON = {RuntimeException.class};
 
     @Inject
-    private Provider<TransactionContext> context;
+    private TransactionContext context;
     @Inject
     private EntityTransaction transaction;
 
@@ -61,7 +60,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
     }
 
     protected boolean isTransactionActive() {
-        return context.get().isActive();
+        return context.isActive();
     }
 
     protected void beginTransaction() {

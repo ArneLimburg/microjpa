@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 - 2021 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package org.microjpa;
 
 import java.lang.annotation.Annotation;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Destroyed;
-import jakarta.enterprise.context.Initialized;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.context.spi.Contextual;
-import jakarta.enterprise.context.spi.CreationalContext;
-import jakarta.enterprise.event.Observes;
-import jakarta.transaction.TransactionScoped;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.spi.Contextual;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.event.Observes;
+import javax.transaction.TransactionScoped;
 
 public class ExtendedPersistenceContext extends AbstractThreadLocalContext {
 
@@ -100,8 +100,8 @@ public class ExtendedPersistenceContext extends AbstractThreadLocalContext {
     }
 
     private boolean isMicroTransaction(Contextual<?> contextual) {
-        return contextual instanceof jakarta.enterprise.inject.spi.Bean
-            && ((jakarta.enterprise.inject.spi.Bean<?>)contextual).getBeanClass().equals(MicroTransaction.class);
+        return contextual instanceof javax.enterprise.inject.spi.Bean
+            && ((javax.enterprise.inject.spi.Bean<?>)contextual).getBeanClass().equals(MicroTransaction.class);
     }
 
     private enum ActivationTrigger {
