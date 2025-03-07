@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Arne Limburg
+ * Copyright 2021 - 2024 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.microjpa.test.CdiTest.ContextScope.PER_TEST_CLASS;
 import static org.microjpa.test.MicroJpaTest.ExtendedPersistenceContextScope.PER_TEST_METHOD;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 
 import org.junit.jupiter.api.Test;
 

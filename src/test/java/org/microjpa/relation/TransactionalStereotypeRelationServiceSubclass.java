@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@
 package org.microjpa.relation;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
+import jakarta.enterprise.inject.Typed;
 
-import org.microjpa.child.TransactionalJtaChildRepository;
-import org.microjpa.parent.TransactionalJtaParentRepository;
-
-@Transactional
 @ApplicationScoped
-public class TransactionalJtaRelationService
-    extends AbstractRelationService<TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
+@Typed(TransactionalStereotypeRelationServiceSubclass.class)
+public class TransactionalStereotypeRelationServiceSubclass extends TransactionalStereotypeRelationService {
 }

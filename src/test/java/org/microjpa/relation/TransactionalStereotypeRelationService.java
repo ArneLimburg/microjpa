@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2020 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,19 +26,18 @@ import org.microjpa.parent.TransactionalParentRepository;
 import org.microjpa.relation.TransactionalRelationService.NoRollbackException;
 import org.microjpa.relation.TransactionalRelationService.RollbackException;
 
-@Transactional(rollbackOn = RollbackException.class, dontRollbackOn = NoRollbackException.class)
 @ApplicationScoped
-public class TransactionalRelationService
+@StereotypeWithoutTransactional
+@TransactionalStereotype
+public class TransactionalStereotypeRelationService
     extends AbstractRelationService<TransactionalParentRepository, TransactionalChildRepository> {
 
-    @Transactional
     public void persistWithRuntimeException(TestChild testChild) {
         childRepository.persist(testChild);
         childRepository.flush();
         throw new IllegalStateException("persist failed");
     }
 
-    @Transactional
     public void persistWithNestedRuntimeException(TestChild testChild) {
         childRepository.persistWithRuntimeException(testChild);
     }
@@ -76,7 +75,7 @@ public class TransactionalRelationService
         throw new RollbackException();
     }
 
-    public void persistWithNestedDeclaredCheckedException(TestChild testChild) throws RollbackException {
+    public void persistWithNestedDeclaredCheckedException(TestChild testChild) throws Exception {
         childRepository.persistWithDeclaredCheckedException(testChild);
     }
 
@@ -110,11 +109,5 @@ public class TransactionalRelationService
 
     public void persistWithInheritingRollbackApplicationExceptionSubclass(TestChild testChild) {
         childRepository.persistWithInheritingRollbackApplicationExceptionSubclass(testChild);
-    }
-
-    public static class NoRollbackException extends RuntimeException {
-    }
-
-    public static class RollbackException extends Exception {
     }
 }

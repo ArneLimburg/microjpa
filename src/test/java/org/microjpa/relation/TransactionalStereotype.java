@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2024 Arne Limburg
+ * Copyright 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,22 @@
  */
 package org.microjpa.relation;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Stereotype;
 import jakarta.transaction.Transactional;
 
-import org.microjpa.child.TransactionalJtaChildRepository;
-import org.microjpa.parent.TransactionalJtaParentRepository;
+import org.microjpa.relation.TransactionalRelationService.NoRollbackException;
+import org.microjpa.relation.TransactionalRelationService.RollbackException;
 
-@Transactional
+@Inherited
+@Stereotype
+@Transactional(rollbackOn = RollbackException.class, dontRollbackOn = NoRollbackException.class)
 @ApplicationScoped
-public class TransactionalJtaRelationService
-    extends AbstractRelationService<TransactionalJtaParentRepository, TransactionalJtaChildRepository> {
+@Retention(RUNTIME)
+public @interface TransactionalStereotype {
 }

@@ -15,23 +15,19 @@ That may be the case in testing scenarios or with servers that do not implement 
 
 ## Latest Release
 
-Latest release version: `1.2.5`
+Latest release version: `2.0.0`
 
 To use it in a Maven project the following dependency should be added to the pom.xml:
 ```xml
 <dependency>
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>1.2.5</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
 or when using Gradle the following line needs to be added to the dependencies block:
 
 ```groovy
-implementation 'org.microjpa:microjpa:1.2.5'
+implementation 'org.microjpa:microjpa:2.0.0'
 ```
-
-## Building MicroJPA locally
-
-Further information on how to build MicroJPA locally can be found [here](BUILD.md).

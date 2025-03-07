@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Arne Limburg
+ * Copyright 2021 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package org.microjpa;
 
-import static javax.interceptor.Interceptor.Priority.LIBRARY_AFTER;
-import static javax.transaction.Transactional.TxType.SUPPORTS;
+import static jakarta.transaction.Transactional.TxType.SUPPORTS;
+import static org.microjpa.AbstractTransactionalInterceptor.TRANSACTIONAL_INTERCEPTOR_PRIORITY;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.Dependent;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.Transactional;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.transaction.Transactional;
 
 @Dependent
 @Transactional(SUPPORTS)
 @Interceptor
-@Priority(LIBRARY_AFTER)
+@Priority(TRANSACTIONAL_INTERCEPTOR_PRIORITY)
 public class SupportsTransactionInterceptor extends AbstractTransactionalInterceptor {
 
     @Override

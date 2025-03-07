@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2021 Arne Limburg
+ * Copyright 2020 - 2025 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,27 @@ package org.microjpa;
 import static java.util.Optional.ofNullable;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import javax.ejb.ApplicationException;
-import javax.inject.Inject;
-import javax.interceptor.InvocationContext;
-import javax.persistence.EntityTransaction;
-import javax.transaction.Transactional;
+import jakarta.ejb.ApplicationException;
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.interceptor.Interceptor;
+import jakarta.interceptor.InvocationContext;
+import jakarta.persistence.EntityTransaction;
+import jakarta.transaction.Transactional;
 
 public abstract class AbstractTransactionalInterceptor implements Serializable {
+
+    public static final int TRANSACTIONAL_INTERCEPTOR_PRIORITY = Interceptor.Priority.PLATFORM_BEFORE + 200;
 
     private static final boolean APPLICATION_EXCEPTION_AVAILABLE;
     static {
         boolean applicationExceptionAvailable = true;
         try {
-            Class.forName("javax.ejb.ApplicationException");
+            Class.forName("jakarta.ejb.ApplicationException");
         } catch (ClassNotFoundException e) {
             applicationExceptionAvailable = false;
         }
@@ -41,7 +47,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
     private static final Class[] ROLLBACK_ON = {RuntimeException.class};
 
     @Inject
-    private TransactionContext context;
+    private Provider<TransactionContext> context;
     @Inject
     private EntityTransaction transaction;
 
@@ -55,7 +61,7 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
     }
 
     protected boolean isTransactionActive() {
-        return context.isActive();
+        return context.get().isActive();
     }
 
     protected void beginTransaction() {
@@ -75,12 +81,21 @@ public abstract class AbstractTransactionalInterceptor implements Serializable {
         if (transactional != null) {
             return transactional;
         }
-        Class<?> type = context.getTarget().getClass();
-        do {
-            transactional = type.getAnnotation(Transactional.class);
-            type = type.getSuperclass();
-        } while (transactional == null);
-        return transactional;
+        Class<? extends Object> type = context.getTarget().getClass();
+        transactional = type.getAnnotation(Transactional.class);
+        if (transactional != null) {
+            return transactional;
+        }
+        for (Annotation annotation: type.getAnnotations()) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (annotationType.isAnnotationPresent(Stereotype.class)) {
+                if (annotationType.isAnnotationPresent(Transactional.class)) {
+                    return annotationType.getAnnotation(Transactional.class);
+                }
+            }
+            // Fixme: Handle stereotypes with additional stereotypes correctly
+        }
+        throw new IllegalStateException("No @Transactional annotation found.");
     }
 
     private void checkRollback(Transactional transactional, Exception exception) {

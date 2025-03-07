@@ -5,7 +5,7 @@
 
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>1.2.6-SNAPSHOT</version>
+  <version>2.1.1-SNAPSHOT</version>
 
   <name>MicroJPA</name>
   <url>http://www.microjpa.org</url>
@@ -50,9 +50,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <jupiter.version>5.6.2</jupiter.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <jupiter.version>5.10.2</jupiter.version>
     
     <sonar.projectKey>ArneLimburg_microjpa</sonar.projectKey>
     <sonar.organization>arnelimburg-github</sonar.organization>
@@ -62,15 +62,33 @@
 
   <dependencies>
     <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>jakarta.enterprise</groupId>
       <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      <version>2.0.2</version>
+      <version>4.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
-      <version>2.2.3</version>
+      <version>3.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.ejb</groupId>
+      <artifactId>jakarta.ejb-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.1.1</version>
       <scope>provided</scope>
     </dependency>
 
@@ -82,27 +100,15 @@
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <version>${jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.deltaspike.cdictrl</groupId>
-      <artifactId>deltaspike-cdictrl-api</artifactId>
-      <version>1.9.4</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>5.4.21.Final</version>
+      <artifactId>hibernate-core-jakarta</artifactId>
+      <version>5.6.15.Final</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.persistence</groupId>
-          <artifactId>javax.persistence-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
@@ -115,20 +121,24 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
         <version>3.1.0</version>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>3.1.2</version>
         <executions>
           <execution>
             <id>default-test</id>
@@ -164,6 +174,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.2.0</version>
         <executions>
@@ -191,6 +202,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
         <version>3.0.0-M1</version>
       </plugin>
@@ -203,19 +215,18 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.8</version>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.7.0</version>
         <extensions>true</extensions>
         <configuration>
-          <serverId>ossrh</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <stagingProfileId>13f9ab4276eac5</stagingProfileId>
-          <autoReleaseAfterClose>true</autoReleaseAfterClose>
-          <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
+          <waitUntil>published</waitUntil>
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.2.0</version>
         <executions>
@@ -242,6 +253,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>3.0.0-M3</version>
         <executions>
@@ -261,6 +273,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>3.1.1</version>
         <configuration>
@@ -287,7 +300,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.5</version>
+        <version>0.8.12</version>
         <executions>
           <execution>
             <id>default-prepare-agent</id>
@@ -355,25 +368,30 @@
         <dependency>
           <groupId>org.apache.openwebbeans</groupId>
           <artifactId>openwebbeans-se</artifactId>
-          <version>2.0.19</version>
+          <version>4.0.0</version>
           <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.meecrowave</groupId>
-          <artifactId>meecrowave-junit</artifactId>
-          <version>1.2.11</version>
+          <groupId>org.apache.openwebbeans</groupId>
+          <artifactId>openwebbeans-web</artifactId>
+          <version>4.0.0</version>
           <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.deltaspike.cdictrl</groupId>
-          <artifactId>deltaspike-cdictrl-owb</artifactId>
-          <version>1.9.4</version>
-          <scope>test</scope>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+          <version>4.0.4</version>
+        </dependency>
+        <dependency>
+          <groupId>org.eclipse.jetty.ee10</groupId>
+          <artifactId>jetty-ee10-servlet</artifactId>
+          <version>12.0.8</version>
         </dependency>
       </dependencies>
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.8.1</version>
             <configuration>
@@ -382,6 +400,61 @@
               </testExcludes>
             </configuration>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.1.2</version>
+            <executions>
+              <execution>
+                <id>default-test</id>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <excludedGroups>single-persistence-unit,web</excludedGroups>
+                  <classpathDependencyExcludes>
+                    <classpathDependencyExclude>org.apache.openwebbeans:openwebbeans-web</classpathDependencyExclude>
+                  </classpathDependencyExcludes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>without-application-exception</id>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <classpathDependencyExcludes>
+                    <classpathDependencyExclude>jakarta.ejb:jakarta.ejb-api</classpathDependencyExclude>
+                    <classpathDependencyExclude>org.apache.openwebbeans:openwebbeans-web</classpathDependencyExclude>
+                  </classpathDependencyExcludes>
+                  <groups>application-exception-test</groups>
+                </configuration>
+              </execution>
+              <execution>
+                <id>single-persistence-unit</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <groups>single-persistence-unit</groups>
+                  <classpathDependencyExcludes>
+                    <classpathDependencyExclude>org.apache.openwebbeans:openwebbeans-web</classpathDependencyExclude>
+                  </classpathDependencyExcludes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>web</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <groups>web</groups>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -389,51 +462,57 @@
       <id>weld</id>
       <dependencies>
         <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-core-jakarta</artifactId>
+          <version>5.6.15.Final</version>
+          <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss</groupId>
+              <artifactId>jandex</artifactId>
+            </exclusion>
+		  </exclusions>
+        </dependency>
+        <dependency>
           <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-jaxrs</artifactId>
-          <version>3.0.20.Final</version>
+          <artifactId>resteasy-core</artifactId>
+          <version>6.2.5.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.resteasy</groupId>
           <artifactId>resteasy-cdi</artifactId>
-          <version>3.0.14.Final</version>
+          <version>6.2.8.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.resteasy</groupId>
           <artifactId>resteasy-servlet-initializer</artifactId>
-          <version>3.0.14.Final</version>
+          <version>6.2.8.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>io.undertow</groupId>
           <artifactId>undertow-servlet</artifactId>
-          <version>2.2.10.Final</version>
+          <version>2.3.8.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.weld.se</groupId>
           <artifactId>weld-se-core</artifactId>
-          <version>3.1.4.Final</version>
+          <version>5.1.2.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.weld.servlet</groupId>
           <artifactId>weld-servlet-core</artifactId>
-          <version>3.1.4.Final</version>
+          <version>5.1.2.Final</version>
           <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.jboss.weld.module</groupId>
           <artifactId>weld-web</artifactId>
-          <version>3.1.4.Final</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.deltaspike.cdictrl</groupId>
-          <artifactId>deltaspike-cdictrl-weld</artifactId>
-          <version>1.9.4</version>
+          <version>5.1.2.Final</version>
           <scope>test</scope>
         </dependency>
       </dependencies>
@@ -444,7 +523,7 @@
             <version>3.8.1</version>
             <configuration>
               <testExcludes>
-                <testExclude>**/MeecrowaveRequestScopedTest.java</testExclude>
+                <testExclude>**/OpenWebBeansRequestScopedTest.java</testExclude>
               </testExcludes>
             </configuration>
           </plugin>
