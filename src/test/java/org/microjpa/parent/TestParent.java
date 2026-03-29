@@ -21,6 +21,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Version;
 
 import org.microjpa.child.TestChild;
 
@@ -30,12 +31,35 @@ public class TestParent {
     @Id
     @GeneratedValue
     private long id;
+    @Version
+    private Long version;
+
+    private String name;
 
     @OneToMany(mappedBy = "parent")
     private List<TestChild> children;
 
+    public TestParent() {
+    }
+
+    public TestParent(String name) {
+        this.name = name;
+    }
+
     public long getId() {
         return id;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<TestChild> getChildren() {

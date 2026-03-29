@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 Arne Limburg
+ * Copyright 2021 - 2026 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static java.util.Arrays.asList;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +42,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletContainerInitializerInfo;
 
-class WeldRequestScopedTest extends AbstractRequestScopedTest {
+class WeldWebTest extends AbstractWebTest {
 
     private Undertow server;
     private SeContainer container;
@@ -56,7 +56,7 @@ class WeldRequestScopedTest extends AbstractRequestScopedTest {
             .setContextPath("/")
             .setDeploymentName("test.war")
             .addServletContainerInitializer(new ServletContainerInitializerInfo(ResteasyServletInitializer.class,
-            new HashSet<>(asList(TestApplication.class, TestResource.class))))
+                new HashSet<>(asList(TestApplication.class, TestResource.class, ETagInterceptor.class))))
             .addListener(new ListenerInfo(Listener.class))
             .addInitParameter("resteasy.injector.factory", "org.jboss.resteasy.cdi.CdiInjectorFactory");
 
@@ -74,8 +74,8 @@ class WeldRequestScopedTest extends AbstractRequestScopedTest {
             .setHandler(path(redirect("/")).addPrefixPath("/", manager.start()))
             .build();
         server.start();
-        URL baseUrl = new URL("http://localhost:" + port + "/test-parent");
-        super.initialize(baseUrl);
+        URI baseUri = URI.create("http://localhost:" + port + "/test-parent");
+        super.initialize(baseUri);
     }
 
     @AfterEach
