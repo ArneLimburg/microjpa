@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 - 2024 Arne Limburg
+ * Copyright 2021 - 2026 Arne Limburg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,12 +60,14 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
 
     private Object transactionKey;
     private TransactionStatus status = TransactionStatus.STATUS_NO_TRANSACTION;
-    private List<Synchronization> synchronizations;
+    private List<Synchronization> beforeCompletionSynchronizations;
+    private List<Synchronization> afterCompletionSynchronizations;
     private Map<Object, Object> transactionResources;
 
     @PostConstruct
     public void initializeSynchronizations() {
-        synchronizations = new ArrayList<>();
+        beforeCompletionSynchronizations = new ArrayList<>();
+        afterCompletionSynchronizations = new ArrayList<>();
     }
 
     @Override
@@ -88,7 +90,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     @Override
     public void commit() {
         status = TransactionStatus.STATUS_COMMITTING;
-        synchronizations.forEach(Synchronization::beforeCompletion);
+        beforeCompletionSynchronizations.forEach(Synchronization::beforeCompletion);
         EntityManagerOperation commitTransaction = operation(em -> em.getTransaction().commit());
         getActiveEntityManagers().forEach(commitTransaction);
         status = TransactionStatus.STATUS_COMMITTED;
@@ -100,7 +102,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     @Override
     public void rollback() {
         status = TransactionStatus.STATUS_ROLLING_BACK;
-        synchronizations.forEach(Synchronization::beforeCompletion);
+        beforeCompletionSynchronizations.forEach(Synchronization::beforeCompletion);
         EntityManagerOperation rollbackTransaction = operation(em -> em.getTransaction().rollback());
         getActiveEntityManagers().forEach(rollbackTransaction);
         status = TransactionStatus.STATUS_ROLLEDBACK;
@@ -144,7 +146,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     }
 
     @Override
-    public int getStatus() throws SystemException {
+    public int getStatus() {
         return getTransactionStatus();
     }
 
@@ -155,7 +157,16 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
 
     @Override
     public void registerInterposedSynchronization(Synchronization synchronization) {
-        synchronizations.add(synchronization);
+        if (status == TransactionStatus.STATUS_COMMITTING || status == TransactionStatus.STATUS_ROLLING_BACK) {
+            synchronization.beforeCompletion();
+        } else {
+            beforeCompletionSynchronizations.add(synchronization);
+        }
+        if (status == TransactionStatus.STATUS_COMMITTED || status == TransactionStatus.STATUS_ROLLEDBACK) {
+            synchronization.afterCompletion(getStatus());
+        } else {
+            afterCompletionSynchronizations.add(synchronization);
+        }
     }
 
     @Override
@@ -172,11 +183,13 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     }
 
     private void end() {
-        synchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
+        afterCompletionSynchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
         transactionContext.deactivate();
         transactionKey = null;
         transactionResources = null;
+        status = TransactionStatus.STATUS_UNKNOWN;
         transactionScopedDestroyedEvent.fire(this);
+        status = TransactionStatus.STATUS_NO_TRANSACTION;
     }
 
     private List<EntityManager> getActiveEntityManagers() {
