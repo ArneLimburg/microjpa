@@ -76,36 +76,45 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     @Override
     public void begin() {
         transactionContext.activate();
-        transactionScopedInitializedEvent.fire(this);
-        transactionKey = UUID.randomUUID();
-        status = TransactionStatus.STATUS_ACTIVE;
-        EntityManagerOperation beginTransaction = operation(em -> em.getTransaction().begin());
-        getActiveEntityManagers().forEach(beginTransaction);
-        LOG.fine("Transaction started.");
-        beginTransaction.checkForException();
+        try {
+            transactionScopedInitializedEvent.fire(this);
+            transactionKey = UUID.randomUUID();
+            status = TransactionStatus.STATUS_ACTIVE;
+            SafeOperation<EntityManager> beginTransaction = safe(em -> em.getTransaction().begin());
+            getActiveEntityManagers().forEach(beginTransaction);
+            LOG.fine("Transaction started.");
+            beginTransaction.checkForException();
+        } catch (RuntimeException e) {
+            end();
+            throw e;
+        }
     }
 
     @Override
     public void commit() {
         status = TransactionStatus.STATUS_COMMITTING;
-        synchronizations.forEach(Synchronization::beforeCompletion);
-        EntityManagerOperation commitTransaction = operation(em -> em.getTransaction().commit());
+        SafeOperation<Synchronization> beforeCompletion = safe(Synchronization::beforeCompletion);
+        synchronizations.forEach(beforeCompletion);
+        SafeOperation<EntityManager> commitTransaction = safe(em -> em.getTransaction().commit());
         getActiveEntityManagers().forEach(commitTransaction);
         status = TransactionStatus.STATUS_COMMITTED;
         end();
         LOG.fine("Transaction committed.");
+        beforeCompletion.checkForException();
         commitTransaction.checkForException();
     }
 
     @Override
     public void rollback() {
         status = TransactionStatus.STATUS_ROLLING_BACK;
-        synchronizations.forEach(Synchronization::beforeCompletion);
-        EntityManagerOperation rollbackTransaction = operation(em -> em.getTransaction().rollback());
+        SafeOperation<Synchronization> beforeCompletion = safe(Synchronization::beforeCompletion);
+        synchronizations.forEach(beforeCompletion);
+        SafeOperation<EntityManager> rollbackTransaction = safe(em -> em.getTransaction().rollback());
         getActiveEntityManagers().forEach(rollbackTransaction);
         status = TransactionStatus.STATUS_ROLLEDBACK;
         end();
         LOG.fine("Transaction rolled back.");
+        beforeCompletion.checkForException();
         rollbackTransaction.checkForException();
     }
 
@@ -126,7 +135,7 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
 
     @Override
     public void setRollbackOnly() {
-        EntityManagerOperation setRollbackOnly = operation(em -> em.getTransaction().setRollbackOnly());
+        SafeOperation<EntityManager> setRollbackOnly = safe(em -> em.getTransaction().setRollbackOnly());
         getActiveEntityManagers().forEach(setRollbackOnly);
         status = TransactionStatus.STATUS_MARKED_ROLLBACK;
         LOG.fine("Transaction marked as rollback only.");
@@ -172,11 +181,14 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
     }
 
     private void end() {
-        synchronizations.forEach(s -> s.afterCompletion(getTransactionStatus()));
+        SafeOperation<Synchronization> afterCompletion = safe(s -> s.afterCompletion(getTransactionStatus()));
+        synchronizations.forEach(afterCompletion);
         transactionContext.deactivate();
         transactionKey = null;
         transactionResources = null;
         transactionScopedDestroyedEvent.fire(this);
+        status = TransactionStatus.STATUS_NO_TRANSACTION;
+        afterCompletion.checkForException();
     }
 
     private List<EntityManager> getActiveEntityManagers() {
@@ -197,21 +209,21 @@ public class MicroTransaction implements UserTransaction, EntityTransaction, Tra
         return entityManagers;
     }
 
-    private EntityManagerOperation operation(Consumer<EntityManager> consumer) {
-        return new EntityManagerOperation(consumer);
+    private <T> SafeOperation<T> safe(Consumer<T> consumer) {
+        return new SafeOperation(consumer);
     }
 
-    private static class EntityManagerOperation implements Consumer<EntityManager> {
+    private static class SafeOperation<T> implements Consumer<T> {
 
-        private Consumer<EntityManager> delegate;
+        private Consumer<T> delegate;
         private RuntimeException thrownException;
 
-        EntityManagerOperation(Consumer<EntityManager> delegate) {
+        SafeOperation(Consumer<T> delegate) {
             this.delegate = delegate;
         }
 
         @Override
-        public void accept(EntityManager em) {
+        public void accept(T em) {
             try {
                 delegate.accept(em);
             } catch (RuntimeException e) {
