@@ -1,5 +1,5 @@
 [![maintained](https://img.shields.io/badge/Maintained-yes-brightgreen.svg)](https://github.com/ArneLimburg/microjpa/graphs/commit-activity)
-![Maven Central Version](https://img.shields.io/maven-central/v/org.microjpa/microjpa)
+[![Maven Central Version](https://img.shields.io/maven-central/v/org.microjpa/microjpa)](https://central.sonatype.com/artifact/org.microjpa/microjpa)
 ![build](https://github.com/ArneLimburg/transactionunit/workflows/build/badge.svg)
 ![Method Coverage](https://img.shields.io/badge/method%20coverage-100%25-brightgreen)
 ![Branch Coverage](https://img.shields.io/badge/branch%20coverage-95%25-brightgreen)
