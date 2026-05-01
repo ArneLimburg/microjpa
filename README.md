@@ -1,8 +1,8 @@
 [![maintained](https://img.shields.io/badge/Maintained-yes-brightgreen.svg)](https://github.com/ArneLimburg/microjpa/graphs/commit-activity)
 [![Maven Central Version](https://img.shields.io/maven-central/v/org.microjpa/microjpa)](https://central.sonatype.com/artifact/org.microjpa/microjpa)
 ![build](https://github.com/ArneLimburg/transactionunit/workflows/build/badge.svg)
-![Method Coverage](https://img.shields.io/badge/method%20coverage-100%25-brightgreen)
-![Branch Coverage](https://img.shields.io/badge/branch%20coverage-95%25-brightgreen)
+[![Method Coverage](https://img.shields.io/badge/method%20coverage-99%25-brightgreen)](https://github.com/ArneLimburg/microjpa/blob/main/pom.xml#L351)
+[![Branch Coverage](https://img.shields.io/badge/branch%20coverage-95%25-brightgreen)](https://github.com/ArneLimburg/microjpa/blob/main/pom.xml#L341)
 [![Liberapay](https://img.shields.io/badge/Liberapay-Donate-%23f6c915.svg)](https://liberapay.com/arnelimburg)
 [![Ko-Fi](https://img.shields.io/badge/Ko--fi-Buy%20me%20a%20coffee!-%2346b798.svg)](https://ko-fi.com/arnelimburg)
 
