@@ -13,19 +13,19 @@ That may be the case in testing scenarios or with servers that do not implement 
 
 ## Latest Release
 
-Latest release version: `2.1.4`
+Latest release version: `2.1.5`
 
 To use it in a Maven project the following dependency should be added to the pom.xml:
 ```xml
 <dependency>
   <groupId>org.microjpa</groupId>
   <artifactId>microjpa</artifactId>
-  <version>2.1.4</version>
+  <version>2.1.5</version>
 </dependency>
 ```
 
 or when using Gradle the following line needs to be added to the dependencies block:
 
 ```groovy
-implementation 'org.microjpa:microjpa:2.1.4'
+implementation 'org.microjpa:microjpa:2.1.5'
 ```
